@@ -7,12 +7,14 @@ class Product:
                  env,
                  name = 'product_name',
                  id = 'id',
-                 variants = [],
+                 previous_process = [],
+                 next_process = [],
                  attributes = {}):
 
         self.name = name # name of the product
         self.id = id # id of the product
-        self.variants = variants # list of variants of the product family
+        self.previous_process = previous_process
+        self.next_process = next_process
         self.attributes = attributes
         _create_attributes(self, attributes)
 
@@ -22,7 +24,13 @@ class Product:
     def define_processes(self, previous_steps =[], next_steps = []):
         self.previous_steps.append(previous_steps)
         self.next_steps.append(next_steps)
-            
+
+class IntermediateProducts():
+   def __init(self, name = 'intermediate_product', id = 'intermediate_product', attributes = {}):
+    self.name = name
+    self.id = id
+    _create_attributes(self, attributes)
+'''            
 # definition of class for product variant which is an extension of product object
 class Variant:
     def __init__(self, 
@@ -102,9 +110,4 @@ class Component:
 # Component feature class enables the further detailing of the component
 # Current application do not demand the necessity of component feature and so, it is not used.
 
-class IntermediateProducts():
-   def __init(self, name = 'intermediate_product', id = 'intermediate_product', attributes = {}):
-    self.name = name
-    self.id = id
-    _create_attributes(self, attributes)
-
+'''
