@@ -14,5 +14,5 @@ SimPy defines three categories of resources:
 
 Skills essentially denotes the possibility of execution of a process using a resource on a given product. The possibility of execution is defined/validated in task which relates processes with skills.
 
-
+### Python functions and methods to remember:
 "globals()[variablenameinstring]" accesses the object through the variable name which equals to the string value

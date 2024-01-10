@@ -1,18 +1,23 @@
-The following project is meant for the simulation and optimization of a production system for the evaluation of multiple KPIs, 
-used for multiple objective optimization.
-The underlying concept of the model is based on the modelling philosophy of PPR concept where all the domains are connected 
-using skills through liaisons with reference available under
+The following work is a Masters thesis topic, implementing multi obkective optimization to enable cross domain consideration for decision making to stay inline with goal of the organization.
+The production system is modelled using PPR concept which aligns well with RAMI 4.0 architecture enabling the production system adapt to the I 4.0 philosophy.
+
 ## Domain classification:
 ### Product Domain
-The Product domain interacts with the process domain  and resource domains through Operations and skills
-The product domain is structured as "Product family -> Product variant -> Assembly -> Product component"
-- Each Product variant is connected to process domain through a list of operations
-- Each assembly is related to resource domain by skills through liaisons.
+The product domain is structured as "Product family -> Product variant -> Assembly -> Product component" an "Order" consists of variant ID through which the product family and list of sub-assemblies and components can be populated.
+- The products are total output of a production system. The Assemblies and components can be considered as intermediate products.
+- The components and assemblies has an attribute "order_id" which links them to the order they are reserved for during the manufacturing operation through processing steps can be defined.
+- In house made components are considered as assemblies and outsourced components are considered as components, which requires no resources => they don't have upstream processes but will have downstream process.|
  
 ### Process Domain
 
 ### Resource Domain
+- simpy resources are supplies and machines
+- simpy containers are components and sub-assemblies 
 
 ## General notes:
-- A table of task name(rows), product(columns) and processing time must be defined for different products and tasks has by the name "tbl_proc_time".
-- Please note that the task name matching the task name list has to be provided for the table, else it returns an error.
+
+
+
+
+## Important:
+- By default, component cost is set to zero which has to be defined during the instantiation of component.

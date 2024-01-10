@@ -1,81 +1,96 @@
+# import local defined functions
+# from PPR.LESFunctions import *
+from PPR.functions import *
+from PPR.Products import *
+from PPR.Resources import *
+from PPR.Collections import *
+
+# importing packages
+import simpy
 import numpy as np
-from functions import *
-# Process domain conceding the process information segregated into different hierarchical levels(operation -> Process -> Task)
-# Validation of skills has to be done here
-# definition of a class of operation
+import matplotlib.pyplot as plt
 
-class Operation():
-    def __init__(self, env, name = 'operation', id = 'id', processes = [], attributes = {}):
-        self.name = name
+'''
+- Resources of Simpy are referred to as machines in a station which are limited in capacity or availability.
+- Containers are referred to as a storage of components required for operations. 
+
+- Maintenance operations can also be modelled as a process 
+
+'''
+
+# --------------Modelling of process domain--------------
+# process domain consist of Operations -> processes -> tasks with decreasing hierarchical level
+
+class Operation: # Operation is a collection of processes => Collection of stations
+    def __init__(env, 
+                 self,
+                 stations, 
+                 upstream_operations, 
+                 downstream_operations, 
+                 input_products, # input products are components and sub-assemblies which are simpy containers
+                 output_products, # output products are definitely sub-assemblies as the components undergo inhouse processing
+                 resources, # resources could be machines and supplies which are simpy resources
+                 processes, 
+                 skills, 
+                 id = 'default_id',
+                 name = 'default_operation_name',
+                 ):
+        self.env = env
         self.id = id
+        self.name = name
+        self.station = station
+        self.upstream_operations = upstream_operations
+        self.downstream_operations = downstream_operations
+        self.input_products = input_products
+        self.output_products = output_products
         self.processes = processes
-        self.attributes = attributes
-        _create_attributes(self, attributes)
-
-        # definition of network of operations
-        self.input_operations = []
-        self.next_operations = []
-
-    # operation is an aggregation of processes
-    def add_process(self, process):
-        self.processes.append(process)
-    
-    def execute_operation(self, env, processes):
-        for process in processes:
-           process.execute_process(self, env)
-    
-    def add_input_operations(self, Operation):
-        self.input_operations.append(Operation)
-
-    def add_next_operations(self, Operation):
-        self.next_operations.append(Operation)
-
-class Process():
-    def __init__(self, name='process', resources={}, tasks = [], attributes = {}):
-        self.name = name
-        self.resources = resources
-        self.tasks = tasks
-        self.input_products = {}
-        self.output_products = {}
-        self.input_processes = []
-        # Next processes depends on the product the process contains
-        self.next_processes = []
-        # create attributes from the attribute list passed initially
-        self.attributes = attributes
-        _create_attributes(self, attributes)
-    
-    def add_input_process(self, process):
-        self.input_processes.append(process)
-
-    def add_next_process(self, process):
-        self.next_processes.append(process)
-
-    def add_task(self, task):
-        self.tasks.append(task)
-        
-    def add_resource(self,resource):
-        self.resources.update(resource)
-    
-    def execute_process(self, env, tasks):
-        for task in tasks:
-           task.execute_task(self, env)
-
-class Task():
-    def __init__(self, env, name = 'task', id = 'id', skills = [], attributes = {}, input_product = []):
-        self.name = name
-        self.id = id    
         self.skills = skills
-        self.attributes = attributes
-        self.input_product = input_product
-        # The object only accepts the processing time pre-calculated. 
-        # Which means, functions must be defined during the modelling of production system populating the times automatically
-        self.task_time = env.tbl_proc_time(self.name, product)
+        update_resources(self, processes)
 
-        _create_attributes(self, attributes)
 
-        
-    def add_skill(self, skill):
-        self.skills.append(skill)
+class Process: # process is a collection of tasks => usually involves multiple machines of a single station
+    def _init_(self,
+                 env, 
+                 id,
+                 name, 
+                 upstream_operations, 
+                 downstream_operations, 
+                 input_products, # input products are components and sub-assemblies which are simpy containers
+                 output_products, # output products are definitely sub-assemblies as the components undergo inhouse processing
+                 resources, # resources could be machines and supplies which are simpy resources
+                 tasks, 
+                 skills):
+            
+        self.env = env
+        self.id = id
+        self.name = name
+        self.upstream_operations = upstream_operations
+        self.downstream_operations = downstream_operations
+        self.input_products = input_products
+        self.output_products = output_products
+        self.resources = resources
+        self.tasks = tasks 
+        self.skill = skills
+        update_resources(self, tasks)
     
-    def execute_task(self, env):
-           yield env.timeout(task_time)
+    def update_tasks(self, tasks): # function to add tasks for the process during run time
+        if isinstance(tasks, list):
+            self.tasks.append(tasks)
+        else:
+            raise TypeError("Invalid datatype for the tasks list, expected lists")
+
+
+class Task: # task is a sequence of steps to do for execution of a process => usually done by a single machine
+    def _init(self, 
+                env, 
+                id, 
+                name, 
+                resources,       # The machines necessary for the execution of task.
+                supplyDict = {},  # dictionary consisting of consumption of supplies
+                ):
+                
+        self.env = env
+        self.id = id 
+        self.name= name
+        self.resources = resources     
+        self.supplyDict = supplyDict 
