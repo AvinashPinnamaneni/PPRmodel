@@ -1,3 +1,9 @@
+import simpy 
+
+## Importing the path of current working directory
+import sys
+sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
+
 ## Declaration of standard variables
 SEC = 1 ## Minimum time unit
 MIN = 60*SEC

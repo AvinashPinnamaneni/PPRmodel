@@ -1,3 +1,16 @@
+# Importing packages
+import simpy
+import numpy as np
+import matplotlib.pyplot as plt
+
+## Importing the path of current working directory
+import sys
+sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
+
+## importing local defined functions and domains
+from Processes import *
+from Resources import *
+from Functions import *
 '''
 - resource domain defined in the paper is not adequate enough for clear explaination of resources. 
 - Resources are classified based on flow of contents as:
@@ -9,33 +22,71 @@
     2. Supplies such as energy, compressed air, gasess etc.
     3. Input parts required for the execution of proces such as fasteners, bearings, maintenance parts etc.
 
+Supplies are part of the final product but are not directly involved, such as welding filler wire, 
+Consumables are not part of final product but have influences on the integration of the product, such as packaging material, machining tool, welding gas, compressed air
+
 - The hierarchy of the resource domain is defined as Manufacturing System(factory) -> cells -> Stations -> Machines
 '''
- 
+ ## ------------definition of resource domain------------
 
 class ManufacturingSystem:
-    def __init__(self, name, stations=[], attributes = {}):
+    def __init__(self, id, name, cells=None, **kwargs):
+        """Initialize a Manufacturing System"""
+        self.id = id
         self.name = name
-        self.stations = stations if stations else []
-        self.attributes = attributes
+        self.cells = cells if cells else []  # List to hold cells within the manufacturing system
 
-    def add_station(self, station):
-        self.stations.append(station)
+    def add_cell(self, cell):
+        """Add a cell to the manufacturing system"""
+        self.cells.append(cell)
+
 
 class Cell:
-    def _init_():
-        pass
+    def __init__(self, id, name, stations=None, skills=None, **kwargs):
+        """Initialize a Cell"""
+        self.id = id
+        self.name = name
+        self.stations = stations if stations else []  # List to hold stations within the cell
+        self.skills = skills if skills else []  # List to hold skills associated with the cell
+
+    def add_station(self, station):
+        """Add a station to the cell"""
+        self.stations.append(station)
+
 
 class Station:
-    def __init__(self, name, resource_components=[], attributes = {}):
+    def __init__(self, id, name, machines = None, skills=None, **kwargs):
+        """Initialize a Station"""
+        self.id = id
         self.name = name
-        self.resource_components = resource_components if resources else []
-        self.attributes = attributes
+        self.machines = machines
+        self.skills = skills if skills else []  # List to hold skills associated with the station
 
-    def add_resource_component(self, resource):
-        self.resources.append(resource)
 
-class Skill:
-    def __init__(self, name, attributes = {}):
-        self.name = name       
-        self.attributes = attributes
+class Machine:
+    def __init__(self, id, name, capacity, supplies, consumables, skills=None, **kwargs):
+        """Initialize a Machine"""
+        self.id = id
+        self.name = name
+        self.capacity = capacity
+        self.supplies = supplies
+        self.consumables = consumables
+        self.skills = skills if skills else []  # List to hold skills associated with the machine
+
+## Supplies includes fasteners, paint, welding electrodes etc. which are part of final product
+class Supplies:
+    def __init__(self, id, capacity, material_nature, **kwargs):
+        """Initialize a Supply"""
+        self.id = id
+        self.capacity = capacity
+        self.material_nature = material_nature  # Type of material nature the supply represents
+
+## Consumables includes resources which dries up such as compressed air, energy, welding gas etc. which are not part of final product
+class Consumable:
+        def __init__(self, id, capacity, material_nature, **kwargs):
+            """Initialize a consumable"""
+            self.id = id
+            self.capacity = capacity
+            self.material_nature = material_nature  # Type of material nature the supply represents
+
+

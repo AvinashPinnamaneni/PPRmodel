@@ -1,9 +1,8 @@
 # import local defined functions
 # from PPR.LESFunctions import *
-from PPR.functions import *
-from PPR.Products import *
-from PPR.Resources import *
-from PPR.Collections import *
+from Functions import *
+from Products import *
+from Resources import *
 
 # importing packages
 import simpy
@@ -19,7 +18,7 @@ import matplotlib.pyplot as plt
 '''
 
 # --------------Modelling of process domain--------------
-# process domain consist of Operations -> processes -> tasks with decreasing hierarchical level
+# process domain consist of Operations -> processes -> tasks, with decreasing hierarchical level
 
 class Operation: # Operation is a collection of processes => Collection of stations
     def __init__(env, 
@@ -32,9 +31,12 @@ class Operation: # Operation is a collection of processes => Collection of stati
                  resources, # resources could be machines and supplies which are simpy resources
                  processes, 
                  skills, 
-                 id = 'default_id',
-                 name = 'default_operation_name',
+                 supplies,
+                 id,
+                 name,
+                 **kwargs
                  ):
+                 
         self.env = env
         self.id = id
         self.name = name
@@ -45,7 +47,10 @@ class Operation: # Operation is a collection of processes => Collection of stati
         self.output_products = output_products
         self.processes = processes
         self.skills = skills
+        self.supplies = supplies
+        update_supplies(self, processes)
         update_resources(self, processes)
+        update_skills(self, processes)
 
 
 class Process: # process is a collection of tasks => usually involves multiple machines of a single station
@@ -58,8 +63,11 @@ class Process: # process is a collection of tasks => usually involves multiple m
                  input_products, # input products are components and sub-assemblies which are simpy containers
                  output_products, # output products are definitely sub-assemblies as the components undergo inhouse processing
                  resources, # resources could be machines and supplies which are simpy resources
+                 supplies,
                  tasks, 
-                 skills):
+                 skills,
+                 **kwargs
+                 ):
             
         self.env = env
         self.id = id
@@ -70,8 +78,11 @@ class Process: # process is a collection of tasks => usually involves multiple m
         self.output_products = output_products
         self.resources = resources
         self.tasks = tasks 
-        self.skill = skills
+        self.skills = skills
+        self.supplies = supplies
+        update_supplies(self, tasks)
         update_resources(self, tasks)
+        update_skills(self, tasks)
     
     def update_tasks(self, tasks): # function to add tasks for the process during run time
         if isinstance(tasks, list):
@@ -86,11 +97,19 @@ class Task: # task is a sequence of steps to do for execution of a process => us
                 id, 
                 name, 
                 resources,       # The machines necessary for the execution of task.
-                supplyDict = {},  # dictionary consisting of consumption of supplies
+                skills,
+                stations,
+                consumables, 
+                supplies,
+                **kwargs
                 ):
                 
         self.env = env
         self.id = id 
         self.name= name
+        self.stations = stations
+        self.skills = skills
+        self.consumables = consumables
+        self.supplies = supplies
         self.resources = resources     
-        self.supplyDict = supplyDict 
+        self.supplies = supplies

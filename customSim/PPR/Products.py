@@ -1,10 +1,12 @@
-from simpy import *
-from Products import *
+# Importing packages
+import simpy
+import numpy as np
+import matplotlib.pyplot as plt
+
+## importing the local defined functions
 from Processes import *
 from Resources import *
-from Collections import *
-
-from functions import *
+from Functions import *
 
 # This program defines a class hierarchy for managing product information at various hierarchical levels.
 # The class hierarchy includes ProductFamily, Variant, Assembly, Component, and Order, representing different levels of product details.
@@ -19,7 +21,8 @@ class ProductFamily:
         id='default_id',
         variants=None,
         **kwargs
-    ):
+        ):
+
         self.env = env
         self.name = name  # Name of the product
         self.id = id  # ID of the product
@@ -37,13 +40,14 @@ class Variant:
     def __init__(
         self,
         env,
-        name='default_variant_name',
-        variant_id='default_id',
-        product_family='default_product_family',  # Used for backtracing to the product family the variant belongs to
+        name= None,
+        variant_id= None,
+        product_family= None,  # Used for backtracing to the product family the variant belongs to
         skills=None,
         assemblies=None,
         **kwargs
-    ):
+        ):
+
         self.name = name
         self.variant_id = variant_id
         self.product_family = product_family
@@ -66,11 +70,12 @@ class Order:
         self,
         env,
         order_date,
-        name='default_product_name',
-        order_id='default_order_id',
-        variant='default_variant',
+        name= None,
+        order_id= None,
+        variant= None,
         **kwargs
-    ):
+        ):
+
         self.env = env
         self.order_date = order_date  # Date of the order
         self.name = name  # Name of the product
@@ -86,15 +91,18 @@ class Assembly:
     def __init__(
         self,
         env,
-        name='default_assembly_name',
-        order_id='default_id',
+        name= None,
+        order_id= None,
         components=None,
         upstream_processes=None,
         downstream_processes=None,
+        skills = None,
         **kwargs
-    ):
+        ):
+
         self.order_id = order_id
         self.name = name
+        self.skills = skills
         self.components = components if components is not None else {}
         self.upstream_processes = upstream_processes if upstream_processes is not None else []
         self.downstream_processes = downstream_processes if downstream_processes is not None else []
@@ -120,14 +128,15 @@ class Component:
     def __init__(
         self,
         env,
-        name='default_component_name',
-        component_id='default_id',
-        order_id ='default_order_id',
+        name= None,
+        component_id= None,
+        order_id = None,
         downstream_processes=None,
-        component_cost=0,
-        component_type='default',
+        component_cost= 0,
+        component_type= None,
         **kwargs
-    ):
+        ):
+
         self.name = name
         self.component_id = component_id
         self.order_id = order_id
