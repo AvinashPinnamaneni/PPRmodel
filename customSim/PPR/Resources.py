@@ -8,9 +8,9 @@ import sys
 sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
 
 ## importing local defined functions and domains
-from Processes import *
-from Resources import *
-from Functions import *
+# from PPR.Processes import *
+# from PPR.Products import *
+# from PPR.Functions import *
 '''
 - resource domain defined in the paper is not adequate enough for clear explaination of resources. 
 - Resources are classified based on flow of contents as:
@@ -35,6 +35,7 @@ class ManufacturingSystem:
         self.id = id
         self.name = name
         self.cells = cells if cells else []  # List to hold cells within the manufacturing system
+        add_kwargs(self, **kwargs)
 
     def add_cell(self, cell):
         """Add a cell to the manufacturing system"""
@@ -48,6 +49,7 @@ class Cell:
         self.name = name
         self.stations = stations if stations else []  # List to hold stations within the cell
         self.skills = skills if skills else []  # List to hold skills associated with the cell
+        add_kwargs(self, **kwargs)
 
     def add_station(self, station):
         """Add a station to the cell"""
@@ -61,6 +63,7 @@ class Station:
         self.name = name
         self.machines = machines
         self.skills = skills if skills else []  # List to hold skills associated with the station
+        add_kwargs(self, **kwargs)
 
 
 class Machine:
@@ -72,6 +75,7 @@ class Machine:
         self.supplies = supplies
         self.consumables = consumables
         self.skills = skills if skills else []  # List to hold skills associated with the machine
+        add_kwargs(self, **kwargs)
 
 ## Supplies includes fasteners, paint, welding electrodes etc. which are part of final product
 class Supplies:
@@ -80,6 +84,7 @@ class Supplies:
         self.id = id
         self.capacity = capacity
         self.material_nature = material_nature  # Type of material nature the supply represents
+        add_kwargs(self, **kwargs)
 
 ## Consumables includes resources which dries up such as compressed air, energy, welding gas etc. which are not part of final product
 class Consumable:
@@ -88,5 +93,6 @@ class Consumable:
             self.id = id
             self.capacity = capacity
             self.material_nature = material_nature  # Type of material nature the supply represents
+            add_kwargs(self, **kwargs)
 
 

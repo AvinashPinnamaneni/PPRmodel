@@ -49,11 +49,11 @@ The current simulation framework is based on PPR design philosophy, where the di
 - **Station**: Collection of set of machines for the execution of certain operations.
 - **Machine**: Lowest level of the manufacturing system, which takes in consumables and supplies for the execution of operations.
 - **Supplies**: Items necessary for the manufacturing process but are not directly incorporated into the final product, such as filler wire, fasteners etc.
-- **Consumables**: Items that are used up in the manufacturing process and are typically consumed or depleted with use, such as compressed air, machine repair consumables, machine maintenance effort etc.
+- **Consumables**: Items that are used up in the manufacturing process and are typically consumed or depleted with use, such as compressed air, machine repair consumables etc.
 
 
 ## General notes:
-- 
+- All the objects are instantiated through a pandas dataframe imported from an excel which is pre-parameterized by stakeholder.
 
 ## Important notes:
 - By default, component cost is set to zero which has to be defined during the instantiation of component.

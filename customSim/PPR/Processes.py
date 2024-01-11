@@ -1,13 +1,18 @@
-# import local defined functions
-# from PPR.LESFunctions import *
-from Functions import *
-from Products import *
-from Resources import *
-
 # importing packages
 import simpy
 import numpy as np
 import matplotlib.pyplot as plt
+
+## Importing the path of current working directory
+import sys
+sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
+
+# import local defined functions
+# from PPR.LESFunctions import *
+# from PPR.Functions import *
+# from PPR.Products import *
+# from PPR.Resources import *
+
 
 '''
 - Resources of Simpy are referred to as machines in a station which are limited in capacity or availability.
@@ -48,9 +53,11 @@ class Operation: # Operation is a collection of processes => Collection of stati
         self.processes = processes
         self.skills = skills
         self.supplies = supplies
+        add_kwargs(self, **kwargs)
         update_supplies(self, processes)
         update_resources(self, processes)
         update_skills(self, processes)
+        add_kwargs(self, **kwargs)
 
 
 class Process: # process is a collection of tasks => usually involves multiple machines of a single station
@@ -80,6 +87,7 @@ class Process: # process is a collection of tasks => usually involves multiple m
         self.tasks = tasks 
         self.skills = skills
         self.supplies = supplies
+        add_kwargs(self, **kwargs)
         update_supplies(self, tasks)
         update_resources(self, tasks)
         update_skills(self, tasks)
@@ -113,3 +121,4 @@ class Task: # task is a sequence of steps to do for execution of a process => us
         self.supplies = supplies
         self.resources = resources     
         self.supplies = supplies
+        add_kwargs(self, **kwargs)

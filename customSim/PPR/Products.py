@@ -3,10 +3,14 @@ import simpy
 import numpy as np
 import matplotlib.pyplot as plt
 
+## Importing the path of current working directory
+import sys
+sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
+
 ## importing the local defined functions
-from Processes import *
-from Resources import *
-from Functions import *
+# from PPR.Processes import *
+# from PPR.Resources import *
+# from PPR.Functions import *
 
 # This program defines a class hierarchy for managing product information at various hierarchical levels.
 # The class hierarchy includes ProductFamily, Variant, Assembly, Component, and Order, representing different levels of product details.
@@ -27,9 +31,7 @@ class ProductFamily:
         self.name = name  # Name of the product
         self.id = id  # ID of the product
         self.variants = variants if variants is not None else []  # List of variants of the product family
-
-        for key, value in kwargs.items():  # Function for adding additional attributes through kwargs
-            setattr(self, key, value)
+        add_kwargs(self, **kwargs)
 
     def add_variant(self, variant):
         self.variants.append(variant)
@@ -53,9 +55,7 @@ class Variant:
         self.product_family = product_family
         self.skills = skills if skills is not None else []
         self.assemblies = assemblies if assemblies is not None else {}
-
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+        add_kwargs(self, **kwargs)
 
     def add_assembly(self, assembly):
         self.assemblies.update(assembly)
@@ -81,9 +81,7 @@ class Order:
         self.name = name  # Name of the product
         self.order_id = order_id  # ID of the product
         self.variant = variant  # List of variants of the product family
-
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+        add_kwargs(self, **kwargs)
 
 
 class Assembly:
@@ -106,9 +104,7 @@ class Assembly:
         self.components = components if components is not None else {}
         self.upstream_processes = upstream_processes if upstream_processes is not None else []
         self.downstream_processes = downstream_processes if downstream_processes is not None else []
-
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+        add_kwargs(self, **kwargs)
 
     def define_processes(self, upstream_processes=None, downstream_processes=None):
         if upstream_processes:
@@ -141,15 +137,13 @@ class Component:
         self.component_id = component_id
         self.order_id = order_id
         self.downstream_processes = downstream_processes if downstream_processes is not None else []
+        add_kwargs(self, **kwargs)
 
         if component_cost:
             self.component_cost = component_cost
         else:
             self.component_cost = evaluate_cost(self)
         self.component_type = component_type
-        
-        for key, value in kwargs.items():
-            setattr(self, key, value)
         
 
 
