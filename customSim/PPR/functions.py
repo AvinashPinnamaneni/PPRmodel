@@ -72,27 +72,15 @@ def get_classes(library_module):  # function which returns the list of classes a
     classes = []
     for name, obj in inspect.getmembers(library_module):
         if inspect.isclass(obj):
-            classes.append(name)
+            classes.append(obj)
 
     return classes
 
-def get_class_attributes(class_instance): # Function which returns attributes of a class
-    class_attributes = {}
-    class_signature = inspect.signature(class_instance.__init__)
 
-    for parameter_name, parameter in class_signature.parameters.items():
-        if parameter_name != 'self':  # Exclude the 'self' parameter
-            class_attributes[parameter_name] = parameter.default
+def get_attributes(class_type):
+    return class_type().attributes
 
-    return class_attributes
 
-def create_excel_sheet(class_instance, file_path):
-    # populating non callable attributes of the class instance passed
-    attributes = [attr for attr in dir(class_instance) if not callable(getattr(class_instance, attr)) and not attr.startswith("__")]
-
-    # Create an empty DataFrame with attribute names as columns
-    df = pd.DataFrame(columns=attributes)
-
-    # Write DataFrame to Excel file
-    df.to_excel(file_path, index=False)
-    print(f"Excel sheet '{file_path}' created successfully.")
+def evaluate_cost(object):
+    # tap into the object attributes for the evaluation of cost of the component
+    pass

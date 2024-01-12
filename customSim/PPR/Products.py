@@ -2,6 +2,7 @@
 import simpy
 import numpy as np
 import matplotlib.pyplot as plt
+from PPR.Functions import *
 
 ## Importing the path of current working directory
 import sys
@@ -31,6 +32,7 @@ class ProductFamily:
         self.name = name  # Name of the product
         self.id = id  # ID of the product
         self.variants = variants if variants is not None else []  # List of variants of the product family
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
     def add_variant(self, variant):
@@ -55,6 +57,7 @@ class Variant:
         self.product_family = product_family
         self.skills = skills if skills is not None else []
         self.assemblies = assemblies if assemblies is not None else {}
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
     def add_assembly(self, assembly):
@@ -69,7 +72,7 @@ class Order:
     def __init__(
         self,
         env,
-        order_date,
+        order_date= None,
         name= None,
         order_id= None,
         variant= None,
@@ -81,6 +84,7 @@ class Order:
         self.name = name  # Name of the product
         self.order_id = order_id  # ID of the product
         self.variant = variant  # List of variants of the product family
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
 
@@ -104,6 +108,7 @@ class Assembly:
         self.components = components if components is not None else {}
         self.upstream_processes = upstream_processes if upstream_processes is not None else []
         self.downstream_processes = downstream_processes if downstream_processes is not None else []
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
     def define_processes(self, upstream_processes=None, downstream_processes=None):
@@ -137,6 +142,7 @@ class Component:
         self.component_id = component_id
         self.order_id = order_id
         self.downstream_processes = downstream_processes if downstream_processes is not None else []
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
         if component_cost:
