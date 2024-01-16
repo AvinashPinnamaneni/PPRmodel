@@ -9,26 +9,16 @@ import inspect
 import sys
 sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
 
+
 # function to add attributes to an object during run time
 def add_attribute(self, attribute):
     if not isinstance(attribute, dict):
         raise ValueError("Attribute should be a dictionary")
 
-    for key, value in attributes.items():
+    for key, value in attribute.items():
         setattr(self, key, value)
         self.attributes[key] = value 
 
-
-# definition of function for the creation of attributes from the dictionary for any given object
-def _create_attributes(self, attributes):
-    if not isinstance(attribute, dict):
-        raise ValueError("Attribute should be a dictionary")
-
-    for key, value in attributes.items():
-        if self._is_valid_attribute(key, value):
-            setattr(self, key, value)
-            self.attributes[key] = value  # Update the attributes dictionary in the class
-    
 
 ## processObject is the object to which the list is being updated and objectsList is the list of objects of lower hierarchical level
 def update_resources(processObject, objectsList): # Updates the resources of the object bsaed on the objects of lower hierarchical level
@@ -63,10 +53,10 @@ def update_skills(processObject, objectsList):
 
 def add_kwargs(object, **kwargs):
     for key, value in kwargs.items():
-        if hasattr(self, key): # Check if the attribute already exists
+        if hasattr(object, key): # Check if the attribute already exists
             raise ValueError(f"Attribute '{key}' already exists in the class.")
         else:  
-            setattr(self, key, value) # Add the attribute to the object
+            setattr(object, key, value) # Add the attribute to the object
 
 def get_classes(library_module):  # function which returns the list of classes available in the module
     classes = []

@@ -11,7 +11,6 @@ sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the p
 ## importing the local defined functions
 # from PPR.Processes import *
 # from PPR.Resources import *
-# from PPR.Functions import *
 
 # This program defines a class hierarchy for managing product information at various hierarchical levels.
 # The class hierarchy includes ProductFamily, Variant, Assembly, Component, and Order, representing different levels of product details.
@@ -22,9 +21,9 @@ class ProductFamily:
     def __init__(
         self,
         env,
-        name='default_product_family_name',
-        id='default_id',
-        variants=None,
+        name = 'default_name',
+        id = 'default_id',
+        variants = [],
         **kwargs
         ):
 
@@ -39,19 +38,19 @@ class ProductFamily:
         self.variants.append(variant)
 
 
-class Variant:
-    # Class for product variant, an extension of the product object
+class Variant:# Class for product variant, an extension of the product object
     def __init__(
         self,
         env,
-        name= None,
-        variant_id= None,
-        product_family= None,  # Used for backtracing to the product family the variant belongs to
-        skills=None,
-        assemblies=None,
+        variant_id = 'default_id',
+        name= 'default_name',
+        product_family = 'default_product_family',  # Used for backtracing to the product family the variant belongs to
+        skills = [], # list of necessary skills
+        assemblies = {}, # assembly_name : qty
         **kwargs
         ):
-
+        
+        self.env = env
         self.name = name
         self.variant_id = variant_id
         self.product_family = product_family
@@ -72,10 +71,10 @@ class Order:
     def __init__(
         self,
         env,
-        order_date= None,
-        name= None,
-        order_id= None,
-        variant= None,
+        order_date= 'default_date',
+        name= 'default_name',
+        order_id= 'default_id',
+        variant= {}, # variant_name : qty
         **kwargs
         ):
 
@@ -93,16 +92,15 @@ class Assembly:
     def __init__(
         self,
         env,
-        name= None,
-        order_id= None,
-        components=None,
-        upstream_processes=None,
-        downstream_processes=None,
-        skills = None,
+        name= 'default_name',
+        components = {}, #  component_name : qty
+        upstream_processes = [], # functionality for nesting of processes to create a network is not modelled  
+        downstream_processes = [],
+        skills = [],
         **kwargs
         ):
 
-        self.order_id = order_id
+        self.env = env
         self.name = name
         self.skills = skills
         self.components = components if components is not None else {}
@@ -129,18 +127,16 @@ class Component:
     def __init__(
         self,
         env,
-        name= None,
-        component_id= None,
-        order_id = None,
-        downstream_processes=None,
-        component_cost= 0,
-        component_type= None,
+        name = 'default_name',
+        component_id = 'default_id',
+        downstream_processes = [], # since components are considered to be the initial parts, they will only have a downstream processes
+        component_cost = 0,
+        component_type = None, # component type might include: gas, part, liquid etc.
         **kwargs
         ):
-
+        self.env = env
         self.name = name
         self.component_id = component_id
-        self.order_id = order_id
         self.downstream_processes = downstream_processes if downstream_processes is not None else []
         self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)

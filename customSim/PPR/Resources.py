@@ -2,6 +2,7 @@
 import simpy
 import numpy as np
 import matplotlib.pyplot as plt
+from PPR.Functions import *
 
 ## Importing the path of current working directory
 import sys
@@ -30,11 +31,16 @@ Consumables are not part of final product but have influences on the integration
  ## ------------definition of resource domain------------
 
 class ManufacturingSystem:
-    def __init__(self, id, name, cells=None, **kwargs):
-        """Initialize a Manufacturing System"""
+    def __init__(self,
+                 id = 'default_id',
+                 name = 'default_name',
+                 cells = {},
+                 **kwargs):
+
         self.id = id
         self.name = name
         self.cells = cells if cells else []  # List to hold cells within the manufacturing system
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
     def add_cell(self, cell):
@@ -43,56 +49,87 @@ class ManufacturingSystem:
 
 
 class Cell:
-    def __init__(self, id, name, stations=None, skills=None, **kwargs):
-        """Initialize a Cell"""
+    def __init__(self,
+                 id = 'default_id',
+                 name = 'default_name',
+                 stations = {},
+                 skills = [],
+                 **kwargs):
+        
         self.id = id
         self.name = name
         self.stations = stations if stations else []  # List to hold stations within the cell
         self.skills = skills if skills else []  # List to hold skills associated with the cell
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
     def add_station(self, station):
-        """Add a station to the cell"""
         self.stations.append(station)
 
 
 class Station:
-    def __init__(self, id, name, machines = None, skills=None, **kwargs):
-        """Initialize a Station"""
+    def __init__(self,
+                 id = 'default_id',
+                 name = 'default_name',
+                 machines = {},
+                 skills = [],
+                 **kwargs):
+    
         self.id = id
         self.name = name
         self.machines = machines
         self.skills = skills if skills else []  # List to hold skills associated with the station
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
 
 class Machine:
-    def __init__(self, id, name, capacity, supplies, consumables, skills=None, **kwargs):
-        """Initialize a Machine"""
+    def __init__(self,
+                 id = 'default_id',
+                 name = 'default_name', 
+                 capacity = float('inf'),
+                 supplies = {},
+                 consumables = {},
+                 skills = [],
+                 **kwargs):
+
         self.id = id
         self.name = name
         self.capacity = capacity
         self.supplies = supplies
         self.consumables = consumables
         self.skills = skills if skills else []  # List to hold skills associated with the machine
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
 ## Supplies includes fasteners, paint, welding electrodes etc. which are part of final product
 class Supplies:
-    def __init__(self, id, capacity, material_nature, **kwargs):
-        """Initialize a Supply"""
+    def __init__(self,
+                 id = 'default_id',
+                 capacity = float('inf'),
+                 material_nature = [], # a material can have multiple natures
+                 **kwargs):
+
         self.id = id
         self.capacity = capacity
         self.material_nature = material_nature  # Type of material nature the supply represents
+        self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
 ## Consumables includes resources which dries up such as compressed air, energy, welding gas etc. which are not part of final product
 class Consumable:
-        def __init__(self, id, capacity, material_nature, **kwargs):
-            """Initialize a consumable"""
+    def __init__(self,
+                 id = 'default_id',
+                 name = 'default_name', 
+                 capacity = float('inf'),
+                 material_nature = [],
+                 **kwargs):
+            
             self.id = id
+            self.name = name
             self.capacity = capacity
             self.material_nature = material_nature  # Type of material nature the supply represents
+            self.attributes = list(locals().keys())[1:]
             add_kwargs(self, **kwargs)
 
 
