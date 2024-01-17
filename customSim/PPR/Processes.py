@@ -1,7 +1,5 @@
 # importing packages
-import simpy
 import numpy as np
-import matplotlib.pyplot as plt
 from PPR.Functions import * 
 
 ## Importing the path of current working directory

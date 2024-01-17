@@ -1,8 +1,6 @@
 # importing packages
 import simpy
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
 import sys
 sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim')
@@ -39,7 +37,6 @@ process_directory_path = '../customSim/LES/systemDefinition/processDomain'
 resource_directory_path = '../customSim/LES/systemDefinition/resourceDomain'
 
 # -------------Modelling the Product domain-------------
-
 productClasses = get_classes(Products) # generating classes available in the product domain
 
 for product_class in productClasses: # iterating through each of the classes
@@ -60,12 +57,12 @@ for product_class in productClasses: # iterating through each of the classes
                 product_class_df[f'{attribute}'] = [] # adding attributes as index in the dataframe
 
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:  # Replacing the excel sheet with updated dataframe            
-                    product_class_df.to_excel(writer, sheet_name=f'{product_class.__name__}', index=True)
-
+                    product_class_df.to_excel(writer, sheet_name=f'{product_class.__name__}', index=True, startrow=0, startcol=0)
+        i = 1
         # Creating instances of the object
         for index, row in product_class_df.iterrows():
-
-            product_class_instance = product_class(env)  # Create an instance of the class dynamically based on class name
+            # Create an instance of the class dynamically based on class name
+            product_class_instance = globals()[f'product_class_instance{i}'] = product_class(env)  
 
             for col_name, value in row.items():  # Iterate through each column of the DataFrame 
 
@@ -78,10 +75,11 @@ for product_class in productClasses: # iterating through each of the classes
                     print(f"Warning: Attribute '{col_name}' does not exist in class '{product_class}'")
     
 
-             # Do something with the product_class_instance, e.g., append it to a list or use it as needed
+            # Do something with the product_class_instance, e.g., append it to a list or use it as needed
             object_list.append(product_class_instance)
 
             print(f"Instance of {product_class}: {product_class_instance.__dict__}")
+            i = i+1
 
     else:
         new_df = pd.DataFrame({})  # create an empty pandas dataframe
@@ -90,12 +88,13 @@ for product_class in productClasses: # iterating through each of the classes
                 new_df[f'{attribute}'] = [] # adding attributes as index in the dataframe
 
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer: # Replacing the excel sheet with updated dataframe 
-                    new_df.to_excel(writer, sheet_name=f'{product_class.__name__}', index=True)
+                    new_df.to_excel(writer, sheet_name=f'{product_class.__name__}', index=True, startrow=0, startcol=0)
 
         print(f'added the sheet {product_class.__name__}. Please update the sheet for added functionality')
- 
+
         
 # -------------Modelling the Process domain-------------
+            
 processClasses = get_classes(Processes) # generating classes available in the product domain
 
 for process_class in processClasses: # iterating through each of the classes
@@ -116,7 +115,7 @@ for process_class in processClasses: # iterating through each of the classes
                 process_class_df[f'{attribute}'] = [] # adding attributes as index in the dataframe
 
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:  # Replacing the excel sheet with updated dataframe            
-                    process_class_df.to_excel(writer, sheet_name=f'{process_class.__name__}', index=True)
+                    process_class_df.to_excel(writer, sheet_name=f'{process_class.__name__}', index=True, startrow=0, startcol=0)
 
         # Creating instances of the object
         for index, row in process_class_df.iterrows():
@@ -134,7 +133,7 @@ for process_class in processClasses: # iterating through each of the classes
                     print(f"Warning: Attribute '{col_name}' does not exist in class '{process_class}'")
     
 
-             # Do something with the process_class_instance, e.g., append it to a list or use it as needed
+            # Do something with the process_class_instance, e.g., append it to a list or use it as needed
             object_list.append(process_class_instance)
 
             print(f"Instance of {process_class}: {process_class_instance.__dict__}")
@@ -146,13 +145,12 @@ for process_class in processClasses: # iterating through each of the classes
                 new_df[f'{attribute}'] = [] # adding attributes as index in the dataframe
 
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer: # Replacing the excel sheet with updated dataframe 
-                    new_df.to_excel(writer, sheet_name=f'{process_class.__name__}', index=True)
+                    new_df.to_excel(writer, sheet_name=f'{process_class.__name__}', index=True, startrow=0, startcol=0)
 
         print(f'added the sheet {process_class.__name__}. Please update the sheet for added functionality')
 
 
 # -------------Modelling the Resource domain-------------
-
 resourceClasses = get_classes(Resources) # populating the classes available in the resource domain
 
 for resource_class in resourceClasses:
@@ -172,7 +170,7 @@ for resource_class in resourceClasses:
                 resource_class_df[f'{attribute}'] = [] # adding attributes as index in the dataframe
 
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:  # Replacing the excel sheet with updated dataframe            
-                    resource_class_df.to_excel(writer, sheet_name=f'{resource_class.__name__}', index=True)
+                    resource_class_df.to_excel(writer, sheet_name=f'{resource_class.__name__}', index=True, startrow=0, startcol=0)
 
         # Creating instances of the object
         for index, row in resource_class_df.iterrows():
@@ -190,7 +188,7 @@ for resource_class in resourceClasses:
                     print(f"Warning: Attribute '{col_name}' does not exist in class '{resource_class}'")
     
 
-             # Do something with the resource_class_instance, e.g., append it to a list or use it as needed
+            # Do something with the resource_class_instance, e.g., append it to a list or use it as needed
             object_list.append(resource_class_instance)
 
             print(f"Instance of {resource_class}: {resource_class_instance.__dict__}")
@@ -202,6 +200,9 @@ for resource_class in resourceClasses:
                 new_df[f'{attribute}'] = [] # adding attributes as index in the dataframe
 
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer: # Replacing the excel sheet with updated dataframe 
-                    new_df.to_excel(writer, sheet_name=f'{resource_class.__name__}', index=True)
+                    new_df.to_excel(writer, sheet_name=f'{resource_class.__name__}', index=True, startrow=0, startcol=0)
 
         print(f'added the sheet {resource_class.__name__}. Please update the sheet for added functionality')
+
+from PPR.Resources import *
+

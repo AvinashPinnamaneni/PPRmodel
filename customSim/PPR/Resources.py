@@ -1,7 +1,5 @@
 # Importing packages
-import simpy
 import numpy as np
-import matplotlib.pyplot as plt
 from PPR.Functions import *
 
 ## Importing the path of current working directory
@@ -32,11 +30,13 @@ Consumables are not part of final product but have influences on the integration
 
 class ManufacturingSystem:
     def __init__(self,
+                 env,
                  id = 'default_id',
                  name = 'default_name',
                  cells = {},
                  **kwargs):
 
+        self.env = env
         self.id = id
         self.name = name
         self.cells = cells if cells else []  # List to hold cells within the manufacturing system
@@ -69,12 +69,14 @@ class Cell:
 
 class Station:
     def __init__(self,
+                 env,
                  id = 'default_id',
                  name = 'default_name',
                  machines = {},
                  skills = [],
                  **kwargs):
     
+        self.env = env
         self.id = id
         self.name = name
         self.machines = machines
@@ -85,6 +87,7 @@ class Station:
 
 class Machine:
     def __init__(self,
+                 env,
                  id = 'default_id',
                  name = 'default_name', 
                  capacity = float('inf'),
@@ -93,6 +96,7 @@ class Machine:
                  skills = [],
                  **kwargs):
 
+        self.env = env
         self.id = id
         self.name = name
         self.capacity = capacity
@@ -110,6 +114,7 @@ class Supplies:
                  material_nature = [], # a material can have multiple natures
                  **kwargs):
 
+        self.env = env
         self.id = id
         self.capacity = capacity
         self.material_nature = material_nature  # Type of material nature the supply represents
@@ -119,12 +124,14 @@ class Supplies:
 ## Consumables includes resources which dries up such as compressed air, energy, welding gas etc. which are not part of final product
 class Consumable:
     def __init__(self,
+                 env,
                  id = 'default_id',
                  name = 'default_name', 
                  capacity = float('inf'),
                  material_nature = [],
                  **kwargs):
             
+            self.env = env
             self.id = id
             self.name = name
             self.capacity = capacity
