@@ -95,6 +95,7 @@ class Assembly:
         upstream_processes = [], # functionality for nesting of processes to create a network is not modelled  
         downstream_processes = [],
         skills = [],
+        dimensions = {},
         **kwargs
         ):
 
@@ -104,6 +105,7 @@ class Assembly:
         self.components = components if components is not None else {}
         self.upstream_processes = upstream_processes if upstream_processes is not None else []
         self.downstream_processes = downstream_processes if downstream_processes is not None else []
+        self.dimensions = dimensions
         self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 

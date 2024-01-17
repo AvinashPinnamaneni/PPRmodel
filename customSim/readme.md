@@ -1,11 +1,12 @@
 ## Modelling and Discrete event simulation of a Production system
-The current simulation framework is based on PPR design philosophy, where the discrete simulation is executed through the package called "Simpy". The production model is used for the optimnal selection of resources and machine sof a new production system whichcan bve extended further for different viewpoints, such as Optimization of production scheduling and Supply chain planning.
+The current simulation framework is based on PPR design philosophy, where the discrete simulation is executed through the package called "Simpy". The production model is used for the optimal selection of resources and machines of a new production system which can be extended further for different viewpoints, such as Optimization of production scheduling and Supply chain planning etc,.
 
 ## introduction:
-- Classification of domains as per Product/Process/Resource framework availabel under the link: https://doi.org/10.1016/j.cirpj.2018.01.001
+- Classification of domains as per Product/Process/Resource framework available under the link: https://doi.org/10.1016/j.cirpj.2018.01.001
 
 ## Programming structure:
-- ** Refer _init_ method of the class for the structure and attributes of a class **
+- Please refer the document provided for the list of class attributes, methods and functions defined for the system.
+- Install the packages provided int he setup.py file by running the command: "python -m pip install -U pip" . Ensure you have created a virtual environment in the project folder.
 - Feel free to extend the class attributes, methods and other functionalities. 
 - I have added **kwargs for all the classes which might make it flexible for the definition of additional attributes during instantiation of a class to make an object.
 - Each of the objects has their methods defined in their respective classes. Please refer to the methods for functionality.
@@ -29,7 +30,7 @@ The current simulation framework is based on PPR design philosophy, where the di
  
 ### Process Domain
 **Structure:**
-- Process domain cosists of information pertaining to the processing steps of a product 
+- Process domain cosists of information of processing steps of a product. 
 
 #### objects of process domain:
 - **Operation**: Aggregation of processes. for example: preparation of casing, preparation of core etc.

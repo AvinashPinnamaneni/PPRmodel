@@ -15,6 +15,8 @@ from PPR.Processes import *
 from PPR.Resources import *
 
 '''
+This script generates the excel file for giving in the data or uses the data in existing file for generating objects.
+
 Steps for modelling the domains:
 - Step 1: Population of all the classes of the domain which can form objects
 - Step 2: Generation of attributes defined in the class in the constructor function
@@ -41,45 +43,43 @@ productClasses = get_classes(Products) # generating classes available in the pro
 
 for product_class in productClasses: # iterating through each of the classes
 
-    object_list = globals()[f'{product_class.__name__}_list'] = []
+    product_object_list  = []
 
     file_path = os.path.join(product_directory_path, f'{product_class.__name__}.xlsx') # file path of excel sheet for the given class
 
     attribute_list = product_class(env).attributes # list of atributes of a class
     
     if os.path.isfile(file_path):  # if sheet exists at given path
-        product_class_df = pd.read_excel(file_path) # import excel sheet as a pandas dataframe
+        product_class_df = pd.read_excel(file_path, usecols=lambda x: 'Unnamed' not in x) # import excel sheet as a pandas dataframe
 
         for attribute in attribute_list: # iterating through attributes of the class and add missing columns corresponding to attributes
 
             if attribute not in product_class_df.columns:
-
-                product_class_df[f'{attribute}'] = [] # adding attributes as index in the dataframe
+                new_column = pd.Series(name=attribute, dtype=object)  # Create a new column with the required name
+                product_class_df = pd.concat((product_class_df, new_column), axis=1) # adding attributes as index in the dataframe
 
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:  # Replacing the excel sheet with updated dataframe            
                     product_class_df.to_excel(writer, sheet_name=f'{product_class.__name__}', index=True)
-        i = 1
+        
         # Creating instances of the object
         for index, row in product_class_df.iterrows():
             # Create an instance of the class dynamically based on class name
-            product_class_instance = globals()[f'product_class_instance{i}'] = product_class(env)  
+            product_class_instance = product_class(env)  
 
             for col_name, value in row.items():  # Iterate through each column of the DataFrame 
+                if col_name != 'kwargs':
+                    if hasattr(product_class_instance, col_name):  # Check if the attribute exists in the class
 
-                if hasattr(product_class_instance, col_name):  # Check if the attribute exists in the class
+                        setattr(product_class_instance, col_name, value) # Set the attribute value in the class instance
 
-                    setattr(product_class_instance, col_name, value) # Set the attribute value in the class instance
-
-                else:
-
-                    print(f"Warning: Attribute '{col_name}' does not exist in class '{product_class}'")
+                    else:
+                        setattr(product_class_instance, col_name, value)
+                        print(f'new attribute:{col_name} is added to an instance of {product_class}')
     
-
-            # Do something with the product_class_instance, e.g., append it to a list or use it as needed
-            object_list.append(product_class_instance)
+            product_object_list.append(product_class_instance)  # Adding the object to object list
 
             print(f"Instance of {product_class}: {product_class_instance.__dict__}")
-            i = i+1
+           
 
     else:
         new_df = pd.DataFrame({})  # create an empty pandas dataframe
@@ -92,21 +92,20 @@ for product_class in productClasses: # iterating through each of the classes
 
         print(f'added the sheet {product_class.__name__}. Please update the sheet for added functionality')
 
-        
 # -------------Modelling the Process domain-------------
             
 processClasses = get_classes(Processes) # generating classes available in the product domain
 
 for process_class in processClasses: # iterating through each of the classes
 
-    object_list = globals()[f'{process_class.__name__}_list'] = []
+    process_object_list = []
 
     file_path = os.path.join(process_directory_path, f'{process_class.__name__}.xlsx') # file path of excel sheet for the given class
 
     attribute_list = process_class(env).attributes # list of atributes of a class
     
     if os.path.isfile(file_path):  # if sheet exists at given path
-        process_class_df = pd.read_excel(file_path) # import excel sheet as a pandas dataframe
+        process_class_df = pd.read_excel(file_path, usecols=lambda x: 'Unnamed' not in x) # import excel sheet as a pandas dataframe
 
         for attribute in attribute_list: # iterating through attributes of the class and add missing columns corresponding to attributes
 
@@ -129,12 +128,10 @@ for process_class in processClasses: # iterating through each of the classes
                     setattr(process_class_instance, col_name, value) # Set the attribute value in the class instance
 
                 else:
+                    setattr(product_class_instance, col_name, value)
+                    print(f'new attribute:{col_name} is added to an instance of {product_class}')
 
-                    print(f"Warning: Attribute '{col_name}' does not exist in class '{process_class}'")
-    
-
-            # Do something with the process_class_instance, e.g., append it to a list or use it as needed
-            object_list.append(process_class_instance)
+            process_object_list.append(process_class_instance) # Adding the object to object list
 
             print(f"Instance of {process_class}: {process_class_instance.__dict__}")
 
@@ -154,14 +151,14 @@ for process_class in processClasses: # iterating through each of the classes
 resourceClasses = get_classes(Resources) # populating the classes available in the resource domain
 
 for resource_class in resourceClasses:
-    object_list = globals()[f'{resource_class.__name__}_list'] = []
+    resource_object_list  = []
 
     file_path = os.path.join(resource_directory_path, f'{resource_class.__name__}.xlsx') # file path of excel sheet for the given class
 
     attribute_list = resource_class(env).attributes # list of atributes of a class
     
     if os.path.isfile(file_path):  # if sheet exists at given path
-        resource_class_df = pd.read_excel(file_path) # import excel sheet as a pandas dataframe
+        resource_class_df = pd.read_excel(file_path, usecols=lambda x: 'Unnamed' not in x) # import excel sheet as a pandas dataframe
 
         for attribute in attribute_list: # iterating through attributes of the class and add missing columns corresponding to attributes
 
@@ -184,12 +181,10 @@ for resource_class in resourceClasses:
                     setattr(resource_class_instance, col_name, value) # Set the attribute value in the class instance
 
                 else:
+                    setattr(product_class_instance, col_name, value)
+                    print(f'new attribute:{col_name} is added to an instance of {product_class}')
 
-                    print(f"Warning: Attribute '{col_name}' does not exist in class '{resource_class}'")
-    
-
-            # Do something with the resource_class_instance, e.g., append it to a list or use it as needed
-            object_list.append(resource_class_instance)
+            resource_object_list.append(resource_class_instance) # Adding the object to object list
 
             print(f"Instance of {resource_class}: {resource_class_instance.__dict__}")
 

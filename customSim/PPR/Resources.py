@@ -109,6 +109,7 @@ class Machine:
 ## Supplies includes fasteners, paint, welding electrodes etc. which are part of final product
 class Supplies:
     def __init__(self,
+                 env,
                  id = 'default_id',
                  capacity = float('inf'),
                  material_nature = [], # a material can have multiple natures

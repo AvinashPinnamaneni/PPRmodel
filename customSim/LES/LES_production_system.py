@@ -58,11 +58,11 @@ for product_class in productClasses: # iterating through each of the classes
 
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer:  # Replacing the excel sheet with updated dataframe            
                     product_class_df.to_excel(writer, sheet_name=f'{product_class.__name__}', index=True, startrow=0, startcol=0)
-        i = 1
+
         # Creating instances of the object
         for index, row in product_class_df.iterrows():
             # Create an instance of the class dynamically based on class name
-            product_class_instance = globals()[f'product_class_instance{i}'] = product_class(env)  
+            product_class_instance = product_class(env)  
 
             for col_name, value in row.items():  # Iterate through each column of the DataFrame 
 
@@ -79,7 +79,6 @@ for product_class in productClasses: # iterating through each of the classes
             object_list.append(product_class_instance)
 
             print(f"Instance of {product_class}: {product_class_instance.__dict__}")
-            i = i+1
 
     else:
         new_df = pd.DataFrame({})  # create an empty pandas dataframe
@@ -203,6 +202,4 @@ for resource_class in resourceClasses:
                     new_df.to_excel(writer, sheet_name=f'{resource_class.__name__}', index=True, startrow=0, startcol=0)
 
         print(f'added the sheet {resource_class.__name__}. Please update the sheet for added functionality')
-
-from PPR.Resources import *
 
