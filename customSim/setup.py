@@ -14,6 +14,8 @@ setup(
         'simpy==4.1.1',
         'six==1.16.0',
         'tzdata==2023.4',
+        'zope.interface==6.1',
+        'DateTime==5.4'
     ],
     python_requires='>=3.6',
 )

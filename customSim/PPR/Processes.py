@@ -93,8 +93,8 @@ class Process: # process is a collection of tasks => usually involves multiple m
         update_supplies(self, tasks)
         update_resources(self, tasks)
         update_skills(self, tasks)
-    
-    def update_tasks(self, tasks): # function to add tasks for the process during run time
+        
+    def add_tasks(self, tasks): # function to add tasks for the process during run time
         if isinstance(tasks, list):
             self.tasks.append(tasks)
         else:

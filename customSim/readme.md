@@ -5,17 +5,16 @@ The current simulation framework is based on PPR design philosophy, where the di
 - Classification of domains as per Product/Process/Resource framework available under the link: https://doi.org/10.1016/j.cirpj.2018.01.001
 
 ## Programming structure:
-- Please refer the document provided for the list of class attributes, methods and functions defined for the system.
-- Install the packages provided int he setup.py file by running the command: "python -m pip install -U pip" . Ensure you have created a virtual environment in the project folder.
-- Feel free to extend the class attributes, methods and other functionalities. 
+- All the domaains are modelled in PPR folder as classes. Please refer the document "classStructure.md" provided, for the list of class attributes, methods and functions defined for the system.
+- Install the packages provided in "setup.py" file by running the command: "python -m pip install -U pip".
+- Feel free to extend the class attributes, methods and other functionalities as per use case.
 - I have added **kwargs for all the classes which might make it flexible for the definition of additional attributes during instantiation of a class to make an object.
-- Each of the objects has their methods defined in their respective classes. Please refer to the methods for functionality.
 
 ## Domain classification:
 ### Product Domain
 **Structure:**
 - The product domain is structured as "Product family -> Product variant -> Assembly -> Product component".
-- An order is an aggregation of dicfferent product variants which can be maped to their respective product families through variant attribute(product_variant).
+- An order is an aggregation of different product variants which can be maped to their respective product families through variant attribute(product_variant).
 - The products are total output of a production system. The Assemblies and components can be considered as intermediate products.
 - The components and assemblies has an attribute "order_id" which links them to the order they are reserved for during the manufacturing operation through processing steps can be defined.
 - In house made components are considered as assemblies and outsourced components are considered as components, which requires no resources => they don't have upstream processes but will have downstream process.

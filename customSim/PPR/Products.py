@@ -6,14 +6,10 @@ from PPR.Functions import *
 import sys
 sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
 
-## importing the local defined functions
-# from PPR.Processes import *
-# from PPR.Resources import *
-
-# This program defines a class hierarchy for managing product information at various hierarchical levels.
-# The class hierarchy includes ProductFamily, Variant, Assembly, Component, and Order, representing different levels of product details.
-# Product refers to the overall product or output product of the system, and intermediate products are assemblies and components.
-
+'''
+ The class hierarchy is structured as ProductFamily -> Variant -> Assembly -> Component. Order is an aggregation of different product variants.
+ Product refers to the overall product or output product of the system, and intermediate products are modelled as assemblies and components.
+'''
 class ProductFamily:
     # Product family the company produces
     def __init__(

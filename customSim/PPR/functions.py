@@ -70,5 +70,6 @@ def get_attributes(class_type):
 
 
 def evaluate_cost(object):
-    # tap into the object attributes for the evaluation of cost of the component
+    # to evaluate the cost based on the list of components being used in case of assemblies and products
+    
     pass
