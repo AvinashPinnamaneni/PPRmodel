@@ -1,4 +1,3 @@
-All the domaains are modelled in PPR folder
 ## Domains:  
     Product Domain, Process domain, Resource domain
 
@@ -11,105 +10,58 @@ All the domaains are modelled in PPR folder
 
 
 1. ________Product domain________
-     ProductFamily:
-        self
-        env
-        name : string
-        id : string
-        variants : list
-        
-        add_variant(self, variant)
 
-     Variant:
-        self
-        env
-        variant_id : string
-        name : string
-        product_family : string
-        skills : list
-        assemblies : dictionary {assembly : qty}
+      Product:
+         self
+         env
+         id : string
+         name : string
+         product_family : string
+         type : string
+         sourcing : string
+         cost : int
+         upstream_processes : list
+         downstream_processes : list
+         features : list
+         skills : list
+         contents: dictionary {content_id : qty}
+         dimensions : dictionary {dimension : value}
+         specifications : dictionary {specification : value}
 
-        add_assembly(self, assembly)
-        add_dimensions(self, dimension)
+         define_processes(self, upstream_processes, downstream_processes)
+         add_feature(self, feature)
+         add_skill(self, skill)
+         add_content(self, part)
+         add_dimension(self, dimensions)
+         add_specification(self, specification)
 
      Order:
         self
         env
         order_date : string
-        name : string
+        customer_name :string
         order_id : string
-        variant : list
+        product : dictionary {product_id : qty}
 
-     Assembly:
-        self
-        env
-        name : string
-        components : dictionary {component : qty}
-        upstream_processes : list
-        downstream_processes : list
-        skills : list
-        dimensions : dictionary {dimension : value}
-
-        define_processes(self, upstream_processes, downstream_processes)
-        add_component(self, component)
-        add_skill(self, skill)
-
-     Component:
-        self
-        env
-        name : string
-        component_id : string
-        downstream_processes : list
-        component_cost : int
-        component_type : string
-
-        define_processes(self, downstream_processes)
-        add_specification(self, specification)
-        add_component_feature(self, feature)
 
 2. ________Process domain________
-     Operation:
+     Process:
         self
         env
         id : string
         name : string
-        stations : list
-        upstream_operations : list 
+        proc_time : int
+        operating_cost : int
+        operators : int
+        upstream_operations : list
         downstream_operations : list
-        input_products : dict {product_id: qty}
-        output_products : dict {product_id: qty}
-        resources : dict {resource_id : qty}
-        processes : list
+        sub_processes : list
         skills : list
-        supplies : dict {supply : qty}
-
-     Process:
-         self
-         env
-         id : string
-         name : string
-         upstream_operations : list
-         downstream_operations : list
-         input_products : dict {product_id: qty}
-         output_products : dict {product_id: qty}
-         resources : dict {resource_id: qty}
-         supplies : dict {supply_id : qty}
-         tasks : list
-         skills : list
+        input_products : dictionary {product_id : qty}
+        output_products : dictionary {product_id : qty}
+        resources : dictionary {resource_id : qty}
 
          add_tasks(self, tasks) => tasks is a list
-     
-     Task:
-         self
-         env
-         id : string
-         name : string
-         resources : dict {resource_id : qty}
-         skills : list
-         stations : list
-         consumables : dict {consumable_id : qty}
-         supplies : dict {supply_id : qty}
-         proc_time : string
 
 
 3. ________Resource domain________
@@ -140,15 +92,8 @@ All the domaains are modelled in PPR folder
         supplies : dict {supply_id : qty}
         consumables : dict {consumable_id : qty}
         skills : list
-     
-     Supplies: 
-        self
-        env
-        id : string
-        capacity : int
-        material_nature : list
 
-     Consumable:
+      Consumable:
         self
         env
         id : string

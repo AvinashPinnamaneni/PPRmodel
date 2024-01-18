@@ -1,9 +1,9 @@
 ## Meeting for 04-01-2023:
 ### Progress of work:
-- I have worked extensively in the exploration of Simantha package which turns out to be out of date and requires a lot of effort to customize the code for the present scenario.
+- I have worked in the exploration of Simantha package which turns out to be out of date and requires a lot of effort to customize the code for the present scenario.
 - A package called Simpy turns out to be a more efficient solution for DES allowing for the modelling of PPR.
-- I have modelled PPR classes following the paper which defined the architecture of PPR Domain and trying to model the current factory into the model
-## Questions:
+- I have modelled PPR classes following the paper which defined the architecture of PPR Domain. Currently trying to model the current factory into the model.
+### Questions:
 - The hierarchy of product domain follows as Product -> Variants -> Sub-Assemblies -> Components -> intermediate products(generated during different component states during processing) => each component can have different processing steps based on the product it is assigned to. Since I am following top down approach, how can I determine the processing step for a component considering the assigned product?
 **Ans**: Don't complicate the structure as these operations could be explored in the further stages. Stick to minimum viable program structure to explain the structure.
 
@@ -19,5 +19,12 @@
                     2. Throughput rate
                     3. Makespan
                     4. Tardiness
-                    
-                     
+### Questions:
+- Can I model assemblies, components and supplies as different classes in different domains and model the functional logic using the structure?
+ **Ans**No, the assemblies, components and supplies must be modelled as immediate products which can be classified based on the attribute called type of the datatype string, in the product class which can take the values assembly, component, supply, overall_product.
+
+## Meeting for 01-02-2023:
+### Progress of work:
+- Start with basic simulation model
+- Model the domains
+-

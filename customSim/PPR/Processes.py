@@ -1,17 +1,8 @@
 # importing packages
-import numpy as np
-from PPR.Functions import * 
-
-## Importing the path of current working directory
 import sys
 sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
 
-# import local defined functions
-# from PPR.LESFunctions import *
-# from PPR.Functions import *
-# from PPR.Products import *
-# from PPR.Resources import *
-
+from PPR.Functions import * 
 
 '''
 - Resources of Simpy are referred to as machines in a station which are limited in capacity or availability.
@@ -24,106 +15,105 @@ sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the p
 # --------------Modelling of process domain--------------
 # process domain consist of Operations -> processes -> tasks, with decreasing hierarchical level
 
-class Operation: # Operation is a collection of processes => Collection of stations
+class Process:
     def __init__(self,
                  env,
                  id = 'default_id',
                  name = 'default_name',
-                 stations = [], 
-                 upstream_operations = [], 
-                 downstream_operations = [], 
+                 proc_time = 0, # time in secs
+                 operating_cost = 0,
+                 operators = 0, # quantity of number of operators required for the process
+                 upstream_processes = [], 
+                 downstream_processes = [], 
+                 sub_processes = [], # list of sub-processes or processing steps
+                 skills = [], 
                  input_products = {}, # components or sub-assemblies : qty
                  output_products = {}, # output sub-assemblies : qty
                  resources = {}, # resource name : consumption 
-                 processes = [], # list of possible processes in the operation 
-                 skills = [], 
-                 supplies = {}, # Supplies : qty
                  **kwargs
                  ):
         
         self.env = env
         self.id = id
         self.name = name
-        self.stations = stations
-        self.upstream_operations = upstream_operations
-        self.downstream_operations = downstream_operations
-        self.input_products = input_products
-        self.output_products = output_products
-        self.resources = resources
-        self.processes = processes
-        self.skills = skills
-        self.supplies = supplies
-        self.attributes = list(locals().keys())[1:]
-
-        add_kwargs(self, **kwargs)
-        update_supplies(self, processes)
-        update_resources(self, processes)
-        update_skills(self, processes)
-
-
-class Process: # process is a collection of tasks => usually involves multiple machines of a single station
-    def __init__(self,
-                 env, 
-                 id = 'default_id',
-                 name = 'default_name', 
-                 upstream_operations = [], 
-                 downstream_operations = [], 
-                 input_products = {}, # input products are components and sub-assemblies which are simpy containers
-                 output_products = {}, # output products are definitely sub-assemblies as the components undergo inhouse processing
-                 resources = {}, # resources could be machines and supplies which are simpy resources
-                 supplies = {},
-                 tasks = [], 
-                 skills = [],
-                 **kwargs
-                 ):
-            
-        self.env = env
-        self.id = id
-        self.name = name
-        self.upstream_operations = upstream_operations
-        self.downstream_operations = downstream_operations
-        self.input_products = input_products
-        self.output_products = output_products
-        self.resources = resources
-        self.tasks = tasks 
-        self.skills = skills
-        self.supplies = supplies
-        self.attributes = list(locals().keys())[1:]
-        add_kwargs(self, **kwargs)
-        update_supplies(self, tasks)
-        update_resources(self, tasks)
-        update_skills(self, tasks)
-        
-    def add_tasks(self, tasks): # function to add tasks for the process during run time
-        if isinstance(tasks, list):
-            self.tasks.append(tasks)
-        else:
-            raise TypeError("Invalid datatype for the tasks list, expected lists")
-
-
-class Task: # task is a sequence of steps to do for execution of a process => usually done by a single machine
-    def __init__(self, 
-                env, 
-                id = 'default_id', 
-                name = 'default_name', 
-                resources = {},       # The machines necessary for the execution of task.
-                skills = [],
-                stations = [],
-                consumables = {}, # consumable name : qty 
-                supplies = {}, # supplies : qty
-                proc_time = 0,
-                **kwargs
-                ):
-                
-        self.env = env
-        self.id = id 
-        self.name= name
-        self.stations = stations
-        self.skills = skills
-        self.consumables = consumables
-        self.supplies = supplies
-        self.resources = resources     
-        self.supplies = supplies
         self.proc_time = proc_time
+        self.operating_cost = operating_cost
+        self.operators = operators
+        self.upstream_processes = upstream_processes
+        self.downstream_processses = downstream_processes
+        self.input_products = input_products
+        self.output_products = output_products
+        self.resources = resources
+        self.sub_processes = sub_processes
+        self.skills = skills
+        self.resources = resources
         self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
+
+
+    def define_processes(self, upstream_processes, downstream_processes):  
+        if upstream_processes:
+            if isinstance(upstream_processes, list):  
+              for process in upstream_processes:
+                if process in self.upstream_processes:
+                    print(f'{process} already exists in upstream process list')
+              else:
+                    self.upstream_processes.append(upstream_processes)
+            else:
+                raise TypeError("Invalid datatype for the upstream processes list, expected lists")
+            
+        if downstream_processes:
+            if isinstance(downstream_processes, list):  
+              for process in downstream_processes:
+                if process in self.downstream_processes:
+                    print(f'{process} already exists in upstream process list')
+              else:
+                    self.downstream_processes.append(downstream_processes)
+            else:
+                raise TypeError("Invalid datatype for the downstream processes list, expected lists")
+
+    def add_sub_processes(self, add_sub_processes): # function to add tasks for the process during run time
+        if isinstance(add_sub_processes, list):
+            self.sub_processes.append(add_sub_processes)
+        else:
+            raise TypeError("Invalid datatype for the sub processes list, expected lists")
+    
+    def add_skill(self, skills):
+            if isinstance(skills, list):
+                for skill in skills:
+                    if skill in self.skills:
+                        print(f'{skill} already exists for the resource')
+                    else:
+                        self.skills.append(skill)
+            else :
+              raise TypeError("Invalid datatype for the skills list, expected lists")
+
+    def add_products(self, input_products, output_products):
+        if isinstance(input_products, list):    
+            for product in input_products:
+                if product in self.input_products:
+                        print(f'{product} already defined in input products. Please modify the quantity in the master sheet')
+                else:
+                    self.input_products.append(product)
+        else:
+            raise TypeError("Invalid datatype for the input products list, expected lists")
+        
+        if isinstance(output_products, list):
+            for product in output_products:
+                if product in self.output_products:
+                    print(f'{product} already defined in output products. Please modify the quantity in the master sheet')
+                else:
+                    self.output_products.append(product)
+        else:
+            raise TypeError("Invalid datatype for the output products list, expected lists")
+    
+
+    def add_resources(self, resources):
+        if isinstance(resources, dict):
+            for key, value in resources:
+                if key in self.resources.keys(): # check if the specification already exists 
+                    ValueError(f'{key} is already defined for the resource. Please change value in the resource definition sheet ')
+                else:
+                    self.resources[key] = value # updation of dictionary with additional dimensions being added
+        else:
+            raise TypeError("Invalid datatype for the resources, expected dictionary")

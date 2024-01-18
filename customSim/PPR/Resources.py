@@ -1,15 +1,11 @@
 # Importing packages
-import numpy as np
-from PPR.Functions import *
-
-## Importing the path of current working directory
 import sys
 sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
 
-## importing local defined functions and domains
-# from PPR.Processes import *
-# from PPR.Products import *
-# from PPR.Functions import *
+# Importing local functions
+from PPR.Functions import *
+
+
 '''
 - resource domain defined in the paper is not adequate enough for clear explaination of resources. 
 - Resources are classified based on flow of contents as:
@@ -28,116 +24,53 @@ Consumables are not part of final product but have influences on the integration
 '''
  ## ------------definition of resource domain------------
 
-class ManufacturingSystem:
+class Resource:
     def __init__(self,
                  env,
                  id = 'default_id',
                  name = 'default_name',
-                 cells = {},
+                 type = 'default_type', # can be processing machine, material handling equipment, consumable etc.
+                 material_nature = 'default_nature', # nature of material such as gases, metal, magnetic etc.
+                 units = 'default_units', # units of measurement
+                 cost_per_unit = 0,
+                 capacity = float('inf'), # capacity of the resource
+                 skills = [],
+                 aggregates = {}, # individual elements which on combination will form the resource
                  **kwargs):
 
         self.env = env
         self.id = id
         self.name = name
-        self.cells = cells if cells else []  # List to hold cells within the manufacturing system
-        self.attributes = list(locals().keys())[1:]
-        add_kwargs(self, **kwargs)
-
-    def add_cell(self, cell):
-        """Add a cell to the manufacturing system"""
-        self.cells.append(cell)
-
-
-class Cell:
-    def __init__(self,
-                 id = 'default_id',
-                 name = 'default_name',
-                 stations = {},
-                 skills = [],
-                 **kwargs):
-        
-        self.id = id
-        self.name = name
-        self.stations = stations if stations else []  # List to hold stations within the cell
+        self.type = type
+        self.material_nature = material_nature
+        self.units = units
+        self.cost_per_unit = cost_per_unit
+        self.capacity = capacity
         self.skills = skills if skills else []  # List to hold skills associated with the cell
-        self.attributes = list(locals().keys())[1:]
-        add_kwargs(self, **kwargs)
-
-    def add_station(self, station):
-        self.stations.append(station)
-
-
-class Station:
-    def __init__(self,
-                 env,
-                 id = 'default_id',
-                 name = 'default_name',
-                 machines = {},
-                 skills = [],
-                 **kwargs):
-    
-        self.env = env
-        self.id = id
-        self.name = name
-        self.machines = machines
-        self.skills = skills if skills else []  # List to hold skills associated with the station
+        self.aggregates = aggregates if aggregates else []  # List to hold cells within the manufacturing system
         self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
 
-class Machine:
-    def __init__(self,
-                 env,
-                 id = 'default_id',
-                 name = 'default_name', 
-                 capacity = float('inf'),
-                 supplies = {},
-                 consumables = {},
-                 skills = [],
-                 **kwargs):
+    def add_skill(self, skills):
+            if isinstance(skills, list):
+                for skill in skills:
+                    if skill in self.skills:
+                        print(f'{skill} already exists for the resource')
+                    else:
+                        self.skills.append(skill)
+            else :
+              raise TypeError("Invalid datatype for the skills list, expected lists")
 
-        self.env = env
-        self.id = id
-        self.name = name
-        self.capacity = capacity
-        self.supplies = supplies
-        self.consumables = consumables
-        self.skills = skills if skills else []  # List to hold skills associated with the machine
-        self.attributes = list(locals().keys())[1:]
-        add_kwargs(self, **kwargs)
+    def add_aggregate(self, aggregates):
+        if isinstance(aggregates, dict):
+            for key, value in aggregates:
+                if key in self.aggregates.keys(): # check if the dimension already exists 
+                    ValueError(f'{key} is already defined for the product. Please change this in the product definition sheet ')
+                else:
+                    self.aggregates[key] = value # updation of dictionary with additional dimensions being added
+        else:
+            raise TypeError("Invalid datatype for the resources, expected dictionary")
 
-## Supplies includes fasteners, paint, welding electrodes etc. which are part of final product
-class Supplies:
-    def __init__(self,
-                 env,
-                 id = 'default_id',
-                 capacity = float('inf'),
-                 material_nature = [], # a material can have multiple natures
-                 **kwargs):
-
-        self.env = env
-        self.id = id
-        self.capacity = capacity
-        self.material_nature = material_nature  # Type of material nature the supply represents
-        self.attributes = list(locals().keys())[1:]
-        add_kwargs(self, **kwargs)
-
-## Consumables includes resources which dries up such as compressed air, energy, welding gas etc. which are not part of final product
-class Consumable:
-    def __init__(self,
-                 env,
-                 id = 'default_id',
-                 name = 'default_name', 
-                 capacity = float('inf'),
-                 material_nature = [],
-                 **kwargs):
-            
-            self.env = env
-            self.id = id
-            self.name = name
-            self.capacity = capacity
-            self.material_nature = material_nature  # Type of material nature the supply represents
-            self.attributes = list(locals().keys())[1:]
-            add_kwargs(self, **kwargs)
 
 

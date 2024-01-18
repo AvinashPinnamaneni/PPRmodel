@@ -18,6 +18,32 @@ def add_attribute(self, attribute):
         self.attributes[key] = value 
 
 
+def add_kwargs(object, **kwargs):
+    for key, value in kwargs.items():
+        if hasattr(object, key): # Check if the attribute already exists
+            raise ValueError(f"Attribute '{key}' already exists in the class.")
+        else:  
+            setattr(object, key, value) # Add the attribute to the object
+
+def get_classes(library_module):  # function which returns the list of classes available in the module
+    classes = []
+    for name, obj in inspect.getmembers(library_module):
+        if inspect.isclass(obj):
+            classes.append(obj)
+
+    return classes
+
+
+def get_attributes(class_type):
+    return class_type().attributes
+
+
+def evaluate_cost(object):
+    # to evaluate the cost based on the list of components being used in case of assemblies and products
+    
+    pass
+
+'''
 ## processObject is the object to which the list is being updated and objectsList is the list of objects of lower hierarchical level
 def update_resources(processObject, objectsList): # Updates the resources of the object bsaed on the objects of lower hierarchical level
     if isinstance(objectsList, list):
@@ -48,28 +74,4 @@ def update_skills(processObject, objectsList):
         processObject.skills.update(process.resources)
     else:
         raise TypeError("Invalid datatype for 'skills'. It should be a list or a single object.")
-
-def add_kwargs(object, **kwargs):
-    for key, value in kwargs.items():
-        if hasattr(object, key): # Check if the attribute already exists
-            raise ValueError(f"Attribute '{key}' already exists in the class.")
-        else:  
-            setattr(object, key, value) # Add the attribute to the object
-
-def get_classes(library_module):  # function which returns the list of classes available in the module
-    classes = []
-    for name, obj in inspect.getmembers(library_module):
-        if inspect.isclass(obj):
-            classes.append(obj)
-
-    return classes
-
-
-def get_attributes(class_type):
-    return class_type().attributes
-
-
-def evaluate_cost(object):
-    # to evaluate the cost based on the list of components being used in case of assemblies and products
-    
-    pass
+'''
