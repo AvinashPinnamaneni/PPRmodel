@@ -43,6 +43,9 @@ def evaluate_cost(object):
     
     pass
 
+def make_container(env, product):
+    return simpy.Container(env, capacity = 5, init = 5)
+    pass
 '''
 ## processObject is the object to which the list is being updated and objectsList is the list of objects of lower hierarchical level
 def update_resources(processObject, objectsList): # Updates the resources of the object bsaed on the objects of lower hierarchical level

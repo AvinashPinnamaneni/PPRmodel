@@ -6,6 +6,11 @@ import sys
 sys.path.insert(1, 'H:/My Drive/Thesis/Simulation/customSim') ## importing the path of current working directory
 
 from PPR.Functions import *
+'''
+- The domains classses are defined below which are Products, Processes and Resources. 
+- Apart from these domains, we have additional suplement classes such as orders and skills(TBD) which are necessary for the modelling the functionality.
+'''
+
 # ____________ Product Domain ____________
 '''
  The class hierarchy is structured as ProductFamily -> Variant and Product. Order is an aggregation of different product variants.
@@ -22,8 +27,6 @@ class Product:
         type = 'default_type', # could be product, sub-assembly, component etc.
         sourcing = 'inhouse', # could be in_house or out_sourced 
         cost = 0,
-        upstream_processes = [], # functionality for nesting of processes to create a network is not modelled  
-        downstream_processes = [],
         features = [],
         skills = [],
         contents = {}, #  contents : qty, for assemblies, contents could be components
@@ -39,13 +42,15 @@ class Product:
         self.type = type
         self.sourcing = sourcing 
         self.cost = cost
-        self.upstream_processes = upstream_processes if upstream_processes is not None else []
-        self.downstream_processes = downstream_processes if downstream_processes is not None else []
+        self.upstream_processes = []
+        self.downstream_processes = []
         self.features = features
         self.skills = skills
         self.contents = contents if contents is not None else {}
         self.dimensions = dimensions
         self.specifications = specifications
+        if self.type == 'standard_part':
+            self.container = make_container(env, self)
         self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
@@ -161,6 +166,7 @@ class Process:
                  proc_time = 0, # time in secs
                  operating_cost = 0,
                  operators = 0, # quantity of number of operators required for the process
+                 operating_status = False,
                  upstream_processes = [], 
                  downstream_processes = [], 
                  sub_processes = [], # list of sub-processes or processing steps
@@ -177,6 +183,7 @@ class Process:
         self.proc_time = proc_time
         self.operating_cost = operating_cost
         self.operators = operators
+        self.operating_status = operating_status
         self.upstream_processes = upstream_processes
         self.downstream_processses = downstream_processes
         self.input_products = input_products
@@ -284,7 +291,11 @@ class Resource:
                  material_nature = 'default_nature', # nature of material such as gases, metal, magnetic etc.
                  units = 'default_units', # units of measurement
                  cost_per_unit = 0,
+                 availability = True,
+                 staged_products = {},
                  capacity = float('inf'), # capacity of the resource
+                 container = object, 
+
                  skills = [],
                  aggregates = {}, # individual elements which on combination will form the resource
                  **kwargs):
@@ -296,7 +307,10 @@ class Resource:
         self.material_nature = material_nature
         self.units = units
         self.cost_per_unit = cost_per_unit
+        self.availability = availability # is set dynamically during the execution of process
+        self.staged_products = staged_products
         self.capacity = capacity
+        self.container = container
         self.skills = skills if skills else []  # List to hold skills associated with the cell
         self.aggregates = aggregates if aggregates else []  # List to hold cells within the manufacturing system
         self.attributes = list(locals().keys())[1:]

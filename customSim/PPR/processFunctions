@@ -1,0 +1,42 @@
+
+from PPR.PPRClasses import *
+
+def execute_process(env, process, resource):
+    '''
+    step 1: The level of products is automatically validated by the simpy package. 
+            If the necessary products are not available, the request is added to waiting queue of the resource.
+            This functionality can be modelled by the .get() method of simpy applied. 
+    '''
+    while True:
+        
+        if process.id == 'some_id':
+            # check for the process parameters to retrieve the list of input, output products and resources
+            input_products = process.input_products # dictionary 
+            output_products = process.output_products # dictionary
+            resources = process.resources # dictionary
+            # get the required input products and required resources
+            for product in input_products:
+                if product.type == 'component': # check if the product is an off-the-shelf part 
+                    retrieved_products = product.container.get()
+                else:
+                    for process in process.upstream_processes:
+                        process.get()
+
+                return retrieved_products
+
+            yield env.timeout(process.proc_time)
+
+            # get the products from the product container and release the output products to respective container or resource to downstream processes
+            resource.completed_products = process.output_products
+            
+            # add a validation for the availability of space in the next entities for transfer of finished products
+
+        else:
+            print(f'Process not available in process database. The ID passed is {process.id}')
+
+        print('Start driving at %d' % env.now)
+        trip_duration = 2
+        
+        yield env.timeout(trip_duration)
+
+
