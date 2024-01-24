@@ -1,4 +1,5 @@
 # Importing packages
+import simpy
 import pandas as pd
 import sys
 
@@ -23,7 +24,6 @@ class Product:
         env,
         id = 'default-id',
         name= 'default_name',
-        product_family = 'default_product_family',  # Used for backtracing to the product family the variant belongs to
         type = 'default_type', # could be product, sub-assembly, component etc.
         sourcing = 'inhouse', # could be in_house or out_sourced 
         cost = 0,
@@ -38,7 +38,6 @@ class Product:
         self.env = env
         self.id = id
         self.name = name
-        self.product_family = product_family
         self.type = type
         self.sourcing = sourcing 
         self.cost = cost
@@ -49,8 +48,10 @@ class Product:
         self.contents = contents if contents is not None else {}
         self.dimensions = dimensions
         self.specifications = specifications
-        if self.type == 'standard_part':
-            self.container = make_container(env, self)
+
+        if self.type == 'component':
+            self.container = simpy.Container(env, capacity = 5, init = 5)
+
         self.attributes = list(locals().keys())[1:]
         add_kwargs(self, **kwargs)
 
@@ -185,7 +186,7 @@ class Process:
         self.operators = operators
         self.operating_status = operating_status
         self.upstream_processes = upstream_processes
-        self.downstream_processses = downstream_processes
+        self.downstream_processes = downstream_processes
         self.input_products = input_products
         self.output_products = output_products
         self.resources = resources
@@ -269,17 +270,17 @@ class Process:
 - resource domain defined in the paper is not adequate enough for clear explaination of resources. 
 - Resources are classified based on flow of contents as:
     1. discrete - That which are measured in number of parts
-    2. flow type - the measurement metrics depends on the material in use. typically lts/min or kgs/min etc., to generalize the current use case, we are considering units/min
-        The units of measurement can be integers or float depending on the context.
+    2. flow type - the measurement metrics depends on the material in use. typically units/sec. 
+                 - To discretize the object flow, units/sec is considered for capacity definition and utilization
+
 - Classification based on the utility:
     1. Fixed asset such as machines.
     2. Supplies such as energy, compressed air, gasess etc.
     3. Input parts required for the execution of proces such as fasteners, bearings, maintenance parts etc.
 
-Supplies are part of the final product but are not directly involved, such as welding filler wire, 
-Consumables are not part of final product but have influences on the integration of the product, such as packaging material, machining tool, welding gas, compressed air
-
-- The hierarchy of the resource domain is defined as Manufacturing System(factory) -> cells -> Stations -> Machines
+** Important**:
+- Make sure to validate the avaialability of part in the resource before making a get_ request
+- In case of definition of stations, machines are to be added as aggregates 
 '''
 
 class Resource:
@@ -287,15 +288,14 @@ class Resource:
                  env,
                  id = 'default_id',
                  name = 'default_name',
-                 type = 'default_type', # can be processing machine, material handling equipment, consumable etc.
+                 type = 'default_type', # can be machine, supply, consumable etc.
                  material_nature = 'default_nature', # nature of material such as gases, metal, magnetic etc.
                  units = 'default_units', # units of measurement
                  cost_per_unit = 0,
                  availability = True,
-                 staged_products = {},
-                 capacity = float('inf'), # capacity of the resource
-                 container = object, 
-
+                 parts = {},
+                 capacity = float('inf'),
+                 holding_capacity = 1,
                  skills = [],
                  aggregates = {}, # individual elements which on combination will form the resource
                  **kwargs):
@@ -308,12 +308,13 @@ class Resource:
         self.units = units
         self.cost_per_unit = cost_per_unit
         self.availability = availability # is set dynamically during the execution of process
-        self.staged_products = staged_products
+        self.parts = parts
         self.capacity = capacity
-        self.container = container
+        self.holding_capacity = 1, # part holding capacity
         self.skills = skills if skills else []  # List to hold skills associated with the cell
         self.aggregates = aggregates if aggregates else []  # List to hold cells within the manufacturing system
         self.attributes = list(locals().keys())[1:]
+        self.add_resource()
         add_kwargs(self, **kwargs)
 
 
@@ -337,5 +338,42 @@ class Resource:
         else:
             raise TypeError("Invalid datatype for the resources, expected dictionary")
 
+    def add_resource(self):
+        if self.type == 'supplies': # Assignment of containers and resources of simpy package
+            self.resource = simpy.Resource(self.env, self.capacity)
+
+        elif self.type == 'machine': # machine itself is a resource and it has capacity of holding resources 
+            self.container = simpy.Container(self.env, self.holding_capacity, 0) # initially, the resource has no part in it  
+            self.resource = simpy.Resource(self.env, self.capacity)
+        else:
+            self.container = simpy.Container(self.env, float('inf'), 0) # represents the cases such as buffers and part stores
 
 
+    def put_part(self, part, qty): # id of the part should be passed as object to increment the parts in the resource 
+        if self.container.capacity - self.container.level < qty:
+            if part.id in list(self.parts.keys()):
+                self.parts[part.id] = self.parts[part.id] + 1 
+                if self.container and self.resource:
+                    self.container.put(qty)
+                    self.resource.put(qty)
+                elif self.container:
+                    self.container.put(qty)
+                elif self.resource:
+                    self.resource.put(qty)
+                else: 
+                    self.add_resource()
+            else:
+                self.parts[part.id] = 1 # adding a new part to the resource
+        else:
+            return False
+
+    def get_part(self, part, qty):
+        if self.container.level > qty:    # validation for availability of requested number of parts in the container
+            if part.id in list(self.parts.keys()):
+                self.parts[part.id] = self.parts[part.id] - 1 
+                return part
+            else:
+                return False 
+
+                
+                

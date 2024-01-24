@@ -16,3 +16,5 @@ Skills essentially denotes the possibility of execution of a process using a res
 
 ### Python functions and methods to remember:
 "globals()[variablenameinstring]" accesses the object through the variable name which equals to the string value
+
+object.__class__.__name__ returns the name of the class
