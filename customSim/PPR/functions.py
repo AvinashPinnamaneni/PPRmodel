@@ -73,21 +73,20 @@ def model_domain(env, domain_class):
         for index, row in class_df.iterrows():
             # Create an instance of the class dynamically based on class name
             class_instance = domain_class(env)  
-
-            for col_name, value in row.items():  # Iterate through each column of the DataFrame 
+            for col_name, value in row.items():
                 if col_name != 'kwargs':
-                    if hasattr(class_instance, col_name):  # Check if the attribute exists in the class
-                        setattr(class_instance, col_name, value) # Set the attribute value in the class instance
-                        print(type(getattr(class_instance, col_name)))
+                    if hasattr(class_instance, col_name):
+                        attribute_value = getattr(class_instance, col_name)
+            
+                        if isinstance(attribute_value, (dict, list)):
+                            setattr(class_instance, col_name, ast.literal_eval(value))
+                        else:
+                            setattr(class_instance, col_name, value)
                     else:
                         setattr(class_instance, col_name, value)
                         print(f'new attribute:{col_name} is added to an instance of {domain_class}')
-    
-            object_list.append(class_instance)  # Adding the object to object list
-
-            print(f"Instance of {domain_class}: {class_instance.__dict__}")
+                object_list.append(class_instance)
            
-
     else:
         new_df = pd.DataFrame({})  # create an empty pandas dataframe
         
@@ -97,20 +96,21 @@ def model_domain(env, domain_class):
                 with pd.ExcelWriter(file_path, engine='openpyxl') as writer: # Replacing the excel sheet with updated dataframe 
                     new_df.to_excel(writer, sheet_name=f'{domain_class.__name__}', index=True)
 
-        print(f'Added the sheet: {domain_class.__name__}. Please update the sheet for added functionality')
+        print(f'Added the sheet: {domain_class.__name__}. Please update the sheet.')
+
     return object_list
 
 
 def map_processes(process_flow_model, object_list): # generates upstream and downstream processes for each of the processes
     processes = []
     for process_id, network in process_flow_model.items():
-        print('process mapping called')
         input_processes  = network[0]
         output_processes  = network[1]
         upstream_processes = define_upstream(process_id, input_processes, object_list)
         downstream_processes = define_downstream(process_id, output_processes, object_list)
-        processes.append(upstream_processes + downstream_processes)
-    processes  = list(set(processes)) # removes duplicate processes in the list
+        processes = upstream_processes + downstream_processes
+
+    print(processes[0].upstream_processes[0].name)   # removes duplicate processes in the list
 
 
 def get_process_object(process_id, object_list):
@@ -120,38 +120,50 @@ def get_process_object(process_id, object_list):
 def define_upstream(process_id, input_processes, object_list):
     process_list = []
     current_process = get_process_object(process_id, object_list)
-    process_list.append(process_id)
-    for input_process_id in input_processes:
+    print(current_process)
+    if current_process is not None:
+        process_list.append(current_process)
 
-        input_process = get_process_object(input_process_id, object_list)
+        for input_process_id in input_processes:
+            input_process_object = get_process_object(input_process_id, object_list)
 
-        if input_process_id not in [id for obj in object_list for id in dir(input_process.upstream_processes)]:
-            print(f'{type(current_process)}, {type(current_process.upstream_processes)}')
-            current_process.upstream_processes.append(input_process) # adding input process object for upstream of current process
-   
-        if process_id not in [id for obj in object_list for id in dir(input_process.downstream_processes)]:
-            input_process.downstream_processes.append(current_process) # adding current process object for downstream of input process
-        
-        process_list.append(input_process)
+            if input_process_object is not None:
+                if input_process_object not in current_process.upstream_processes:
+                    current_process.upstream_processes.append(input_process_object)
+
+                if current_process not in input_process_object.downstream_processes:
+                    input_process_object.downstream_processes.append(current_process)
+
+                process_list.append(input_process_object)
+            else:
+                print(f"Warning: Process with ID {input_process_id} not found in object_list")
     return process_list
+
        
 
 def define_downstream(process_id, output_processes, object_list):
     process_list = []
     current_process = get_process_object(process_id, object_list)
-    process_list.append(process_id)
-    for output_process_id in output_processes:
 
-        output_process = get_process_object(output_process_id, object_list)
+    if current_process is not None:
+        process_list.append(current_process)
 
-        if output_process_id not in [id for obj in object_list for id in dir(output_process.upstream_processes)]:
-            current_process.upstream_processes.append(output_process) # adding input process object for upstream of current process
-   
-        if process_id not in [id for obj in object_list for id in dir(output_process.downstream_processes)]:
-            output_process.downstream_processes.append(current_process) # adding current process object for downstream of input process
-        
-        process_list.append(output_process)
+        for output_process_id in output_processes:
+            output_process_object = get_process_object(output_process_id, object_list)
+
+            if output_process_object is not None:
+                if output_process_object not in current_process.downstream_processes:
+                    current_process.downstream_processes.append(output_process_object)
+
+                if current_process not in output_process_object.upstream_processes:
+                    output_process_object.upstream_processes.append(current_process)
+
+                process_list.append(output_process_object)
+            else:
+                print(f"Warning: Process with ID {output_process_id} not found in object_list")
+
     return process_list
+
 
 
 
