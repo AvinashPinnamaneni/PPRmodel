@@ -11,11 +11,12 @@ env = simpy.Environment()
 
 
 domains = get_classes(PPRClasses) # generating the domains which are defined as classes in PPRClasses
-print(f'The domains are: {domains}')
+# print(f'The domains are: {domains}')
 
+directory_path = '../customSim/LES/systemDefinition'
 
 for domain in domains:
-    domain.object_list = model_domain(env, domain) # defines objects based on the attributes defined in the excel sheet
+    domain.object_list = model_domain(env, domain, directory_path) # defines objects based on the attributes defined in the excel sheet
     # print(f'The objects of the domain: {domain.__name__} are {domain.object_list}') # prints the objects created while the domains are modelled
 
 object_list = Product.object_list + Process.object_list + Resource.object_list 
@@ -30,7 +31,7 @@ object_list = Product.object_list + Process.object_list + Resource.object_list
 # definition of process flow model
 process_flow_model = {'proc_1':[['proc_2', 'proc_3', 'proc_4', 'proc_5'], ['proc_6', 'proc_7', 'proc_8', 'proc_9']] } # define the process model as a nested list
 
-processes = map_processes(process_flow_model, object_list) # generates the upstream and downstream processes based on process flow model
+processes = map_processes(process_flow_model, Process) # generates the upstream and downstream processes based on process flow model
 
 '''
 def simulate_factory(env, processes, orders):

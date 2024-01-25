@@ -31,8 +31,7 @@ class Product:
         skills = [],
         contents = {}, #  contents : qty, for assemblies, contents could be components
         dimensions = {},
-        specifications = {},
-        **kwargs
+        specifications = {}   
         ):
 
         self.env = env
@@ -53,7 +52,6 @@ class Product:
             self.container = simpy.Container(env, capacity = 5, init = 5)
 
         self.attributes = list(locals().keys())[1:]
-        add_kwargs(self, **kwargs)
 
 
     def define_processes(self, upstream_processes, downstream_processes):
@@ -136,8 +134,7 @@ class Order:
         order_date= 'default_date',
         customer_name= 'default_name',
         order_id= 'default_id',
-        product= {}, # variant_name : qty
-        **kwargs
+        product= {} # variant_name : qty
         ):
 
         self.env = env
@@ -146,8 +143,6 @@ class Order:
         self.order_id = order_id  # ID of the product
         self.product = product  # dictionary of the variants ordered
         self.attributes = list(locals().keys())[1:]
-        add_kwargs(self, **kwargs)
-
 
 # ____________ Process domain ____________
 '''
@@ -174,8 +169,7 @@ class Process:
                  skills = [], 
                  input_products = {}, # components or sub-assemblies : qty
                  output_products = {}, # output sub-assemblies : qty
-                 resources = {}, # resource name : consumption 
-                 **kwargs
+                 resources = {} # resource name : consumption 
                  ):
         
         self.env = env
@@ -194,7 +188,6 @@ class Process:
         self.skills = skills
         self.resources = resources
         self.attributes = list(locals().keys())[1:]
-        add_kwargs(self, **kwargs)
 
 
     def define_processes(self, upstream_processes, downstream_processes):  
@@ -295,8 +288,8 @@ class Resource:
                  capacity = float('inf'),
                  holding_capacity = 1,
                  skills = [],
-                 aggregates = {}, # individual elements which on combination will form the resource
-                 **kwargs):
+                 aggregates = {} # individual elements which on combination will form the resource
+                 ):
 
         self.env = env
         self.id = id
@@ -311,7 +304,6 @@ class Resource:
         self.aggregates = aggregates if aggregates else []  # List of sub-resources or machines
         self.attributes = list(locals().keys())[1:]
         self.add_resource()
-        add_kwargs(self, **kwargs)
 
 
     def add_skill(self, skills):

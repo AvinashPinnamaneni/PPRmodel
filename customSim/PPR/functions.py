@@ -43,7 +43,8 @@ def get_classes(library_module):  # function which returns the list of classes a
 
 
 def get_attributes(class_type):
-    return class_type().attributes
+        attributes = class_type().attributes
+        return attributes
 
 
 def evaluate_cost(object):
@@ -51,9 +52,8 @@ def evaluate_cost(object):
     pass
 
 
-def model_domain(env, domain_class):
+def model_domain(env, domain_class, directory_path):
     object_list = []
-    directory_path = '../customSim/LES/systemDefinition'
     file_path = os.path.join(directory_path, f'{domain_class.__name__}.xlsx') # file path of excel sheet for the given class
 
     attribute_list = domain_class(env).attributes # list of atributes of a class
@@ -85,7 +85,7 @@ def model_domain(env, domain_class):
                     else:
                         setattr(class_instance, col_name, value)
                         print(f'new attribute:{col_name} is added to an instance of {domain_class}')
-                object_list.append(class_instance)
+            object_list.append(class_instance)
            
     else:
         new_df = pd.DataFrame({})  # create an empty pandas dataframe
@@ -101,17 +101,28 @@ def model_domain(env, domain_class):
     return object_list
 
 
-def map_processes(process_flow_model, object_list): # generates upstream and downstream processes for each of the processes
+def map_processes(process_flow_model, domain): # generates upstream and downstream processes for each of the processes
     processes = []
     for process_id, network in process_flow_model.items():
         input_processes  = network[0]
         output_processes  = network[1]
-        upstream_processes = define_upstream(process_id, input_processes, object_list)
-        downstream_processes = define_downstream(process_id, output_processes, object_list)
-        processes = upstream_processes + downstream_processes
+        upstream_processes = define_upstream(process_id, input_processes, domain.object_list)
+        downstream_processes = define_downstream(process_id, output_processes, domain.object_list)
+        processes.append(upstream_processes + downstream_processes)
+        print(get_name_list(processes[0]))
 
-    print(processes[0].upstream_processes[0].name)   # removes duplicate processes in the list
+    for process in processes[0]:
+        upstream_processes = get_name_list(process.upstream_processes)
+        downstream_processes = get_name_list(process.downstream_processes)
+        
+        # print(f'{process.name}: upstream processes {upstream_processes}, downstream processes {downstream_processes}')
+     
 
+def get_name_list(list_of_objects):
+    name_list = []
+    for object in  list_of_objects:
+        name_list.append(object.name)
+    return name_list
 
 def get_process_object(process_id, object_list):
     return next((obj for obj in object_list if obj.id == process_id), None) # returns process object matching the id passed
@@ -120,23 +131,19 @@ def get_process_object(process_id, object_list):
 def define_upstream(process_id, input_processes, object_list):
     process_list = []
     current_process = get_process_object(process_id, object_list)
-    print(current_process)
     if current_process is not None:
-        process_list.append(current_process)
 
         for input_process_id in input_processes:
             input_process_object = get_process_object(input_process_id, object_list)
 
-            if input_process_object is not None:
-                if input_process_object not in current_process.upstream_processes:
-                    current_process.upstream_processes.append(input_process_object)
+            # if input_process_object is not None:
+            if input_process_object not in current_process.upstream_processes:
+                current_process.upstream_processes.append(input_process_object)
 
-                if current_process not in input_process_object.downstream_processes:
-                    input_process_object.downstream_processes.append(current_process)
+            if current_process not in input_process_object.downstream_processes:
+                input_process_object.downstream_processes.append(current_process)
 
-                process_list.append(input_process_object)
-            else:
-                print(f"Warning: Process with ID {input_process_id} not found in object_list")
+            process_list.append(input_process_object)
     return process_list
 
        
@@ -146,7 +153,6 @@ def define_downstream(process_id, output_processes, object_list):
     current_process = get_process_object(process_id, object_list)
 
     if current_process is not None:
-        process_list.append(current_process)
 
         for output_process_id in output_processes:
             output_process_object = get_process_object(output_process_id, object_list)
