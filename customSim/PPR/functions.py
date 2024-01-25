@@ -1,4 +1,5 @@
 # Importing packages
+import ast
 import simpy
 import pandas as pd
 import inspect
@@ -31,6 +32,7 @@ def add_kwargs(object, **kwargs):
         else:  
             setattr(object, key, value) # Add the attribute to the object
 
+
 def get_classes(library_module):  # function which returns the list of classes available in the module
     classes = []
     for name, obj in inspect.getmembers(library_module):
@@ -46,7 +48,6 @@ def get_attributes(class_type):
 
 def evaluate_cost(object):
     # to evaluate the cost based on the list of components being used in case of assemblies and products
-    
     pass
 
 
@@ -61,7 +62,6 @@ def model_domain(env, domain_class):
         class_df = pd.read_excel(file_path, usecols=lambda x: 'Unnamed' not in x) # import excel sheet as a pandas dataframe
 
         for attribute in attribute_list: # iterating through attributes of the class and add missing columns corresponding to attributes
-
             if attribute not in class_df.columns:
                 new_column = pd.Series(name=attribute, dtype=object)  # Create a new column with the required name
                 class_df = pd.concat((class_df, new_column), axis=1) # adding attributes as index in the dataframe
@@ -77,9 +77,8 @@ def model_domain(env, domain_class):
             for col_name, value in row.items():  # Iterate through each column of the DataFrame 
                 if col_name != 'kwargs':
                     if hasattr(class_instance, col_name):  # Check if the attribute exists in the class
-
                         setattr(class_instance, col_name, value) # Set the attribute value in the class instance
-
+                        print(type(getattr(class_instance, col_name)))
                     else:
                         setattr(class_instance, col_name, value)
                         print(f'new attribute:{col_name} is added to an instance of {domain_class}')
@@ -101,25 +100,60 @@ def model_domain(env, domain_class):
         print(f'Added the sheet: {domain_class.__name__}. Please update the sheet for added functionality')
     return object_list
 
-# generates upstream and downstream processes as objects for processes using process flow model
-def define_process(process_flow_model): # generate upstream and downstream processes based on process flow model
-    stations = []
-    for process_object in process_flow_model:
-        if isinstance(process_object, dict):
-            sub_processes = process_object[(list(process_object.keys())[0])] # returns the list of sub-processes
-            define_process(sub_processes)
-        else:
-            process_object.upstream_processes = [previous_process]
-            process_object.downstream_processes = [get_downstream(process_flow_model, process_object)]
-        previous_process = next((proc_obj for proc_obj in process_flow_model if proc_obj.id==str(process_object)), None)
-        stations.append(process_object)
-    return stations
+
+def map_processes(process_flow_model, object_list): # generates upstream and downstream processes for each of the processes
+    processes = []
+    for process_id, network in process_flow_model.items():
+        print('process mapping called')
+        input_processes  = network[0]
+        output_processes  = network[1]
+        upstream_processes = define_upstream(process_id, input_processes, object_list)
+        downstream_processes = define_downstream(process_id, output_processes, object_list)
+        processes.append(upstream_processes + downstream_processes)
+    processes  = list(set(processes)) # removes duplicate processes in the list
+
+
+def get_process_object(process_id, object_list):
+    return next((obj for obj in object_list if obj.id == process_id), None) # returns process object matching the id passed
+
+
+def define_upstream(process_id, input_processes, object_list):
+    process_list = []
+    current_process = get_process_object(process_id, object_list)
+    process_list.append(process_id)
+    for input_process_id in input_processes:
+
+        input_process = get_process_object(input_process_id, object_list)
+
+        if input_process_id not in [id for obj in object_list for id in dir(input_process.upstream_processes)]:
+            print(f'{type(current_process)}, {type(current_process.upstream_processes)}')
+            current_process.upstream_processes.append(input_process) # adding input process object for upstream of current process
+   
+        if process_id not in [id for obj in object_list for id in dir(input_process.downstream_processes)]:
+            input_process.downstream_processes.append(current_process) # adding current process object for downstream of input process
         
-def get_downstream(process_flow_model, process):
-    if isinstance(process_flow_model[process_flow_model.index(process) + 1], dict):
-        return  next((proc_obj for proc_obj in process_flow_model if proc_obj.id==str(process_flow_model[process_flow_model.index(process) + 1].keys())), None)
-    else:
-        return next((proc_obj for proc_obj in process_flow_model if proc_obj.id==str(process_flow_model[process_flow_model.index(process) + 1])), None)
+        process_list.append(input_process)
+    return process_list
+       
+
+def define_downstream(process_id, output_processes, object_list):
+    process_list = []
+    current_process = get_process_object(process_id, object_list)
+    process_list.append(process_id)
+    for output_process_id in output_processes:
+
+        output_process = get_process_object(output_process_id, object_list)
+
+        if output_process_id not in [id for obj in object_list for id in dir(output_process.upstream_processes)]:
+            current_process.upstream_processes.append(output_process) # adding input process object for upstream of current process
+   
+        if process_id not in [id for obj in object_list for id in dir(output_process.downstream_processes)]:
+            output_process.downstream_processes.append(current_process) # adding current process object for downstream of input process
+        
+        process_list.append(output_process)
+    return process_list
+
+
 
 '''
 ------------ Function for making contianer ------------

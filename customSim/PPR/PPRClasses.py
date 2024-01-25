@@ -170,7 +170,7 @@ class Process:
                  operating_status = False,
                  upstream_processes = [], 
                  downstream_processes = [], 
-                 sub_processes = [], # list of sub-processes or processing steps
+                 sub_processes = {}, # list of sub-processes or processing steps
                  skills = [], 
                  input_products = {}, # components or sub-assemblies : qty
                  output_products = {}, # output sub-assemblies : qty
@@ -218,9 +218,9 @@ class Process:
             else:
                 raise TypeError("Invalid datatype for the downstream processes list, expected lists")
 
-    def add_sub_processes(self, add_sub_processes): # function to add tasks for the process during run time
-        if isinstance(add_sub_processes, list):
-            self.sub_processes.append(add_sub_processes)
+    def add_sub_processes(self, sub_processes): # function to add tasks for the process during run time
+        if isinstance(sub_processes, dict):
+            self.sub_processes.update(sub_processes)
         else:
             raise TypeError("Invalid datatype for the sub processes list, expected lists")
     
@@ -289,10 +289,8 @@ class Resource:
                  id = 'default_id',
                  name = 'default_name',
                  type = 'default_type', # can be machine, supply, consumable etc.
-                 material_nature = 'default_nature', # nature of material such as gases, metal, magnetic etc.
                  units = 'default_units', # units of measurement
                  cost_per_unit = 0,
-                 availability = True,
                  parts = {},
                  capacity = float('inf'),
                  holding_capacity = 1,
@@ -304,15 +302,13 @@ class Resource:
         self.id = id
         self.name = name
         self.type = type
-        self.material_nature = material_nature
         self.units = units
         self.cost_per_unit = cost_per_unit
-        self.availability = availability # is set dynamically during the execution of process
         self.parts = parts
         self.capacity = capacity
-        self.holding_capacity = 1, # part holding capacity
+        self.holding_capacity = holding_capacity, # part holding capacity
         self.skills = skills if skills else []  # List to hold skills associated with the cell
-        self.aggregates = aggregates if aggregates else []  # List to hold cells within the manufacturing system
+        self.aggregates = aggregates if aggregates else []  # List of sub-resources or machines
         self.attributes = list(locals().keys())[1:]
         self.add_resource()
         add_kwargs(self, **kwargs)
@@ -328,7 +324,7 @@ class Resource:
             else :
               raise TypeError("Invalid datatype for the skills list, expected lists")
 
-    def add_aggregate(self, aggregates):
+    def add_aggregate(self, aggregates): # add machines or resources to a station or resource
         if isinstance(aggregates, dict):
             for key, value in aggregates:
                 if key in self.aggregates.keys(): # check if the dimension already exists 
@@ -350,30 +346,17 @@ class Resource:
 
 
     def put_part(self, part, qty): # id of the part should be passed as object to increment the parts in the resource 
-        if self.container.capacity - self.container.level < qty:
-            if part.id in list(self.parts.keys()):
-                self.parts[part.id] = self.parts[part.id] + 1 
-                if self.container and self.resource:
-                    self.container.put(qty)
-                    self.resource.put(qty)
-                elif self.container:
-                    self.container.put(qty)
-                elif self.resource:
-                    self.resource.put(qty)
-                else: 
-                    self.add_resource()
-            else:
-                self.parts[part.id] = 1 # adding a new part to the resource
+        yield self.container.put(qty) # wiating for the space to be available
+        if part.id in list(self.parts.keys()):
+            self.parts[part.id] = self.parts[part.id] + qty 
         else:
-            return False
+            self.parts[part.id] = qty # adding a new part to the resource
 
     def get_part(self, part, qty):
         if self.container.level > qty:    # validation for availability of requested number of parts in the container
             if part.id in list(self.parts.keys()):
-                self.parts[part.id] = self.parts[part.id] - 1 
-                return part
+                self.parts[part.id] = self.parts[part.id] - qty
+                yield self.container.get(qty)
+                return True
             else:
-                return False 
-
-                
-                
+                return False         
