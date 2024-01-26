@@ -281,12 +281,14 @@ class Resource:
                  env,
                  id = 'default_id',
                  name = 'default_name',
-                 type = 'default_type', # can be machine, supply, consumable etc.
+                 type = 'default_type', # can be machine, supply etc.
                  units = 'default_units', # units of measurement
                  cost_per_unit = 0,
                  parts = {},
                  capacity = float('inf'),
                  holding_capacity = 1,
+                 upstream_processes = [],
+                 downstream_processes = [],
                  skills = [],
                  aggregates = {} # individual elements which on combination will form the resource
                  ):
@@ -299,6 +301,8 @@ class Resource:
         self.cost_per_unit = cost_per_unit
         self.parts = parts
         self.capacity = capacity
+        self.upstream_processes = upstream_processes
+        self.downstream_processes = downstream_processes
         self.holding_capacity = holding_capacity, # part holding capacity
         self.skills = skills if skills else []  # List to hold skills associated with the cell
         self.aggregates = aggregates if aggregates else []  # List of sub-resources or machines

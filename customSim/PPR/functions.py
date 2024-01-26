@@ -25,14 +25,6 @@ def add_attribute(self, attribute):
         self.attributes[key] = value 
 
 
-def add_kwargs(object, **kwargs):
-    for key, value in kwargs.items():
-        if hasattr(object, key): # Check if the attribute already exists
-            raise ValueError(f"Attribute '{key}' already exists in the class.")
-        else:  
-            setattr(object, key, value) # Add the attribute to the object
-
-
 def get_classes(library_module):  # function which returns the list of classes available in the module
     classes = []
     for name, obj in inspect.getmembers(library_module):
@@ -52,39 +44,39 @@ def evaluate_cost(object):
     pass
 
 
-def model_domain(env, domain_class, directory_path):
+def model_domain(env, domain, directory_path):
     object_list = []
-    file_path = os.path.join(directory_path, f'{domain_class.__name__}.xlsx') # file path of excel sheet for the given class
-
-    attribute_list = domain_class(env).attributes # list of atributes of a class
+    file_path = f'{directory_path}/{domain.__name__}.xlsx' # file path of excel sheet for the given class
+    attribute_list = domain(env).attributes # list of atributes of a class
     
-    if os.path.isfile(file_path):  # if sheet exists at given path
-        class_df = pd.read_excel(file_path, usecols=lambda x: 'Unnamed' not in x) # import excel sheet as a pandas dataframe
+    if os.path.isfile(file_path):  # if sheet exists at the given path
+        class_df = pd.read_excel(file_path, usecols=lambda x: 'Unnamed' not in x)  # import excel sheet as a pandas dataframe
 
-        for attribute in attribute_list: # iterating through attributes of the class and add missing columns corresponding to attributes
-            if attribute not in class_df.columns:
-                new_column = pd.Series(name=attribute, dtype=object)  # Create a new column with the required name
-                class_df = pd.concat((class_df, new_column), axis=1) # adding attributes as index in the dataframe
+        with pd.ExcelWriter(file_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:  # Open Excel writer outside the loop
+            for attribute in attribute_list:  # iterating through attributes of the class and add missing columns corresponding to attributes
+                if attribute not in class_df.columns:
+                    new_column = pd.Series(name=attribute, dtype=object)  # Create a new column with the required name
+                    class_df = pd.concat((class_df, new_column), axis=1)  # adding attributes as an index in the dataframe
 
-                with pd.ExcelWriter(file_path, engine='openpyxl') as writer:  # Replacing the excel sheet with updated dataframe            
-                    class_df.to_excel(writer, sheet_name=f'{domain_class.__name__}', index=True)
+            class_df.to_excel(writer, sheet_name=f'{domain.__name__}', index=True)  # Write the updated dataframe to the Excel file
+
         
         # Creating instances of the object
         for index, row in class_df.iterrows():
             # Create an instance of the class dynamically based on class name
-            class_instance = domain_class(env)  
+            class_instance = domain(env)  
             for col_name, value in row.items():
                 if col_name != 'kwargs':
                     if hasattr(class_instance, col_name):
-                        attribute_value = getattr(class_instance, col_name)
-            
-                        if isinstance(attribute_value, (dict, list)):
+                        attribute_type = getattr(class_instance, col_name)
+                        
+                        if isinstance(attribute_type, (dict, list)):
                             setattr(class_instance, col_name, ast.literal_eval(value))
                         else:
                             setattr(class_instance, col_name, value)
                     else:
                         setattr(class_instance, col_name, value)
-                        print(f'new attribute:{col_name} is added to an instance of {domain_class}')
+                        print(f'new attribute:{col_name} is added to an instance of {domain}')
             object_list.append(class_instance)
            
     else:
@@ -93,29 +85,38 @@ def model_domain(env, domain_class, directory_path):
         for attribute in attribute_list:
                 new_df[f'{attribute}'] = [] # adding attributes as index in the dataframe
 
-                with pd.ExcelWriter(file_path, engine='openpyxl') as writer: # Replacing the excel sheet with updated dataframe 
-                    new_df.to_excel(writer, sheet_name=f'{domain_class.__name__}', index=True)
+        with pd.ExcelWriter(file_path, engine='openpyxl') as writer: # Replacing the excel sheet with updated dataframe 
+            new_df.to_excel(writer, sheet_name=f'{domain.__name__}', index=True)
 
-        print(f'Added the sheet: {domain_class.__name__}. Please update the sheet.')
+        print(f'Added the sheet: {domain.__name__}. Please update the sheet.')
 
     return object_list
 
 
-def map_processes(process_flow_model, domain): # generates upstream and downstream processes for each of the processes
+def map_processes(process_flow_model, object_list): # generates upstream and downstream processes for each of the processes
     processes = []
     for process_id, network in process_flow_model.items():
         input_processes  = network[0]
         output_processes  = network[1]
-        upstream_processes = define_upstream(process_id, input_processes, domain.object_list)
-        downstream_processes = define_downstream(process_id, output_processes, domain.object_list)
-        processes.append(upstream_processes + downstream_processes)
-        print(get_name_list(processes[0]))
-
-    for process in processes[0]:
-        upstream_processes = get_name_list(process.upstream_processes)
-        downstream_processes = get_name_list(process.downstream_processes)
+        upstream_processes = define_upstream(process_id, input_processes, object_list)
+        downstream_processes = define_downstream(process_id, output_processes, object_list)
         
-        # print(f'{process.name}: upstream processes {upstream_processes}, downstream processes {downstream_processes}')
+        # adding current process to the list
+        current_process = get_process_object(process_id, object_list)
+        if current_process not in processes:
+                processes.append(current_process)
+
+    processes = processes + upstream_processes + downstream_processes
+
+    for process in processes:
+        if process is not None:
+            upstream_processes = get_name_list(process.upstream_processes)
+            downstream_processes = get_name_list(process.downstream_processes)
+            print(f'{process.name}: {upstream_processes}, {downstream_processes}')
+        else:
+            print("No production objects defined.")
+
+        
      
 
 def get_name_list(list_of_objects):
@@ -169,6 +170,48 @@ def define_downstream(process_id, output_processes, object_list):
                 print(f"Warning: Process with ID {output_process_id} not found in object_list")
 
     return process_list
+
+
+
+def add_data_to_excel(file_path, search_column, search_value, target_column, data_to_add):
+    try:
+        # Read the Excel file
+        df = pd.read_excel(file_path, usecols=lambda x: 'Unnamed' not in x)
+
+        # Find the index of the row based on the value of the search_column
+        index_to_update = df.index[df[search_column] == search_value].tolist()
+
+        # Check if the row was found
+        if index_to_update:
+            # Get the existing list as a string from the specified cell
+            existing_list_str = df.at[index_to_update[0], target_column]
+
+            # Convert the string to a list using ast.literal_eval
+            existing_list = ast.literal_eval(existing_list_str)
+
+            # Update the list (add new elements, remove duplicates, etc.)
+            for element in data_to_add:
+                if element not in existing_list:
+                    existing_list.append(element)
+
+            # Convert the updated list back to a string
+            updated_list_str = str(existing_list)
+
+            # Add the updated string to the target_column in the selected row
+            df.at[index_to_update[0], target_column] = updated_list_str
+
+            # Write the updated DataFrame back to the Excel file
+            with pd.ExcelWriter(file_path, engine='openpyxl', mode='a') as writer:
+                df.to_excel(writer, index=False)
+
+            print(f"Data added successfully for {search_column}={search_value}.")
+        else:
+            print(f"Row not found for {search_column}={search_value}.")
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+
 
 
 
