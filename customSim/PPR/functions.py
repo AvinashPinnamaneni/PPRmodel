@@ -60,20 +60,24 @@ def model_domain(env, domain, directory_path):
             class_df.to_excel(writer, sheet_name=f'{domain.__name__}', index=True)
 
         for index, row in class_df.iterrows():
-            class_instance = domain(env)  
+            class_instance = domain(env)  # Create a new class_instance for each row
+            
+            # Iterate over the columns in the row
             for col_name, value in row.items():
-                if col_name != 'kwargs':
-                    if hasattr(class_instance, col_name):
-                        attribute_type = getattr(class_instance, col_name)
-                        
-                        if isinstance(attribute_type, (dict, list)):
-                            setattr(class_instance, col_name, ast.literal_eval(value))
-                        else:
-                            setattr(class_instance, col_name, value)
+                if hasattr(class_instance, col_name):
+                    attribute_type = getattr(class_instance, col_name)
+                    print(attribute_type)
+                    if isinstance(attribute_type, (dict, list)):
+                        setattr(class_instance, col_name, ast.literal_eval(value))
                     else:
                         setattr(class_instance, col_name, value)
-                        print(f'new attribute:{col_name} is added to an instance of {domain}')
+                else:
+                    setattr(class_instance, col_name, value)
+                    print(f'new attribute:{col_name} is added to an instance of {domain}')
+
             object_list.append(class_instance)
+
+            # print(object_list)
            
     else:
         new_df = pd.DataFrame({})
@@ -85,6 +89,8 @@ def model_domain(env, domain, directory_path):
             new_df.to_excel(writer, sheet_name=f'{domain.__name__}', index=True)
 
         print(f'Added the sheet: {domain.__name__}. Please update the sheet.')
+
+        print([object.id for object in object_list])
     return object_list
 
 
@@ -95,10 +101,7 @@ def map_processes(process_flow_model, object_list):
     for process_id, network in process_flow_model.items():
         input_processes = network[0]
         output_processes = network[1]
-        
-        print(get_name_list(get_process_object(process_id, object_list).upstream_processes))
         upstream_processes = define_upstream(process_id, input_processes, object_list)
-        print(get_name_list(get_process_object(process_id, object_list).upstream_processes))
         downstream_processes = define_downstream(process_id, output_processes, object_list)
 
         current_process = get_process_object(process_id, object_list)
@@ -120,32 +123,14 @@ def map_processes(process_flow_model, object_list):
         else:
             print("No production objects defined.")
 
-# Function to get a list of names from a list of objects or strings
-def get_name_list(list_of_objects):
-    """Return a list of names from a list of objects or strings."""
-    name_list = []
-    for obj in list_of_objects:
-        if hasattr(obj, 'name'):
-            name_list.append(obj.name)
-        else:
-            name_list.append(str(obj))  # Convert non-object elements to string
-    return name_list
 
-
-def get_process_object(process_id, object_list):
-    """Return the process object matching the given id."""
-    return next((obj for obj in object_list if obj.id == process_id), None)
-
-
-def define_upstream(process_id, input_processes, object_list):
-
+def define_upstream(process_name, input_processes, object_list):
     process_list = []
-    current_process = get_process_object(process_id, object_list)
-    
+    current_process = get_process_object(process_name, object_list)
     if current_process is not None:
 
-        for input_process_id in input_processes:
-            input_process_object = get_process_object(input_process_id, object_list)
+        for input_process_name in input_processes:
+            input_process_object = get_process_object(input_process_name, object_list)
 
             if input_process_object is not None:
                 if input_process_object not in current_process.upstream_processes:
@@ -157,21 +142,20 @@ def define_upstream(process_id, input_processes, object_list):
 
                 process_list.append(input_process_object)
             else:
-                print(f"Warning: Process with ID {input_process_id} not found in object_list")
-
+                print(f"Warning: Process with ID {input_process_name} not found in object_list")
 
     return process_list
 
 
-def define_downstream(process_id, output_processes, object_list):
+def define_downstream(process_name, output_processes, object_list):
 
     process_list = []
-    current_process = get_process_object(process_id, object_list)
+    current_process = get_process_object(process_name, object_list)
 
     if current_process is not None:
 
-        for output_process_id in output_processes:
-            output_process_object = get_process_object(output_process_id, object_list)
+        for output_process_name in output_processes:
+            output_process_object = get_process_object(output_process_name, object_list)
 
             if output_process_object is not None:
                 if output_process_object not in current_process.downstream_processes:
@@ -182,11 +166,12 @@ def define_downstream(process_id, output_processes, object_list):
 
                 process_list.append(output_process_object)
             else:
-                print(f"Warning: Process with ID {output_process_id} not found in object_list")
+                print(f"Warning: Process with name {output_process_name} not found in {output_processes}")
     
     return process_list
 
 def make_process_flow_model(env, domains, directory_path):
+
     process_flow_model = {} 
     # generating process flow model from
     for domain in domains:
@@ -205,3 +190,20 @@ def make_process_flow_model(env, domains, directory_path):
                 process_map = {str(object.name) : [upstream_process_list, downstream_process_list]}
                 process_flow_model.update(process_map)
     return process_flow_model
+
+
+# Function to get a list of names from a list of objects or strings
+def get_name_list(list_of_objects):
+    """Return a list of names from a list of objects or strings."""
+    name_list = []
+    for obj in list_of_objects:
+        if hasattr(obj, 'name'):
+            name_list.append(obj.name)
+        else:
+            name_list.append(str(obj))  # Convert non-object elements to string
+    return name_list
+
+
+def get_process_object(process_name, object_list):
+    """Return the process object matching the given name."""
+    return next((obj for obj in object_list if obj.id == process_name), None)

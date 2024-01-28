@@ -18,3 +18,12 @@ Skills essentially denotes the possibility of execution of a process using a res
 "globals()[variablenameinstring]" accesses the object through the variable name which equals to the string value
 
 object.__class__.__name__ returns the name of the class
+
+
+for making a product, call for the product and back trace the processes required for making the product, like if the output product of a process is know, get the information of input products and eventually backtrace the process to initial porocess and execute the process from beginning to order the compoents, parts and consumables.
+Procedure for initiation of order:
+- Order contains information about the list of products ordered along with other order related data. 
+- The product list has to be acquired for each of the orders.
+- Each of the product will have it's upstream and downstream process mapped through the upstream and downstream processes of the process and resource which specifies how we
+
+Add an attribute of consumption of resources for the product as to what is actually planned and what is really happening.

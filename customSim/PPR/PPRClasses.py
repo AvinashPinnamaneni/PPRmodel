@@ -133,14 +133,14 @@ class Order:
         env,
         order_date= 'default_date',
         customer_name= 'default_name',
-        order_id= 'default_id',
+        id= 'default_id',
         product= {} # variant_name : qty
         ):
 
         self.env = env
         self.order_date = order_date  # Date of the order
         self.customer_name = customer_name  # Name of the customer
-        self.order_id = order_id  # ID of the product
+        self.id = id  # ID of the product
         self.product = product  # dictionary of the variants ordered
         self.attributes = list(locals().keys())[1:]
 
@@ -245,7 +245,6 @@ class Process:
                     self.output_products.append(product)
         else:
             raise TypeError("Invalid datatype for the output products list, expected lists")
-    
 
     def add_resources(self, resources):
         if isinstance(resources, dict):
@@ -257,6 +256,10 @@ class Process:
         else:
             raise TypeError("Invalid datatype for the resources, expected dictionary")
 
+    def run_process(self, env):
+        
+        yield env.timeout(self.proc_time)
+        
 # ____________ Resource domain ____________
         
 '''
